@@ -1,0 +1,9 @@
+# ملفات مؤقتة
+*.tmp
+.DS_Store
+Thumbs.db
+
+# أسرار
+.env
+*.key
+*.pem

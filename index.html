@@ -1,0 +1,2198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#25D366">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="واتساب بلس">
+    <title>واتساب بلس - إرسال صور حقيقية</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #25D366;
+            --primary-dark: #128C7E;
+            --secondary: #34B7F1;
+            --success: #48bb78;
+            --danger: #fc8181;
+            --warning: #f6ad55;
+            --gray-50: #f7fafc;
+            --gray-100: #edf2f7;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e0;
+            --gray-400: #a0aec0;
+            --gray-500: #718096;
+            --gray-600: #4a5568;
+            --gray-700: #2d3748;
+            --gray-800: #1a202c;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+            --transition: all 0.3s ease;
+        }
+
+        html {
+            font-size: 15px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #128C7E 0%, #25D366 100%);
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: 8px;
+            padding-bottom: calc(8px + var(--safe-bottom));
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .app-header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+        }
+
+        .logo-text h1 {
+            font-size: 18px;
+            color: var(--gray-800);
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .logo-text small {
+            font-size: 10px;
+            color: var(--gray-400);
+            display: block;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .status-badge {
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-badge.connected {
+            background: #f0fff4;
+            color: var(--success);
+        }
+
+        .status-badge.disconnected {
+            background: #fff5f5;
+            color: var(--danger);
+        }
+
+        .status-badge.resetting {
+            background: #ebf8ff;
+            color: var(--secondary);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .card.resetting {
+            opacity: 0.3;
+            pointer-events: none;
+            filter: blur(2px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .card-header .icon {
+            font-size: 22px;
+        }
+
+        .card-header h2 {
+            font-size: 16px;
+            color: var(--gray-800);
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .card-header .badge {
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            transition: var(--transition);
+            background: var(--gray-50);
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            -webkit-appearance: none;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+            background: white;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            transition: var(--transition);
+            background: var(--gray-50);
+            font-family: inherit;
+            -webkit-appearance: none;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+            background: white;
+        }
+
+        .file-upload-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .file-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 16px;
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-sm);
+            background: var(--gray-50);
+            transition: var(--transition);
+            min-height: 70px;
+        }
+
+        .file-upload-area:active {
+            transform: scale(0.98);
+        }
+
+        .file-upload-area.has-image {
+            border-color: var(--primary);
+            background: #f0fff4;
+        }
+
+        .upload-icon {
+            font-size: 28px;
+        }
+
+        .upload-text {
+            font-size: 13px;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .upload-hint {
+            font-size: 10px;
+            color: var(--gray-400);
+        }
+
+        /* معاينة الصورة */
+        .image-preview-container {
+            margin-top: 10px;
+            display: none;
+            position: relative;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 2px solid var(--gray-200);
+            background: var(--gray-50);
+        }
+
+        .image-preview-container.active {
+            display: block;
+        }
+
+        .image-preview-container img {
+            width: 100%;
+            max-height: 250px;
+            object-fit: contain;
+            display: block;
+            background: white;
+        }
+
+        .image-preview-container .image-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 11px;
+        }
+
+        .image-preview-container .image-info .image-size {
+            opacity: 0.7;
+        }
+
+        .image-preview-container .remove-image {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            z-index: 10;
+        }
+
+        .image-preview-container .remove-image:active {
+            transform: scale(0.9);
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            touch-action: manipulation;
+            width: 100%;
+            min-height: 48px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:active {
+            background: var(--primary-dark);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:active {
+            background: #e53e3e;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-reset:active {
+            transform: scale(0.96);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            font-size: 16px;
+            padding: 14px;
+        }
+
+        .btn-send:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, var(--danger) 0%, #e53e3e 100%);
+            color: white;
+        }
+
+        .btn .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn.loading .spinner {
+            display: inline-block;
+        }
+
+        .btn.loading .btn-text {
+            opacity: 0.7;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-row .btn {
+            flex: 1;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 8px 4px;
+            background: var(--gray-50);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .stat-item.resetting {
+            opacity: 0.3;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gray-800);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 9px;
+            color: var(--gray-400);
+            font-weight: 500;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .progress-container {
+            background: white;
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--gray-200);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #25D366, #128C7E);
+            transition: width 0.5s ease;
+            border-radius: 10px;
+            width: 0%;
+        }
+
+        .progress-fill.resetting {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--gray-500);
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .progress-details {
+            display: flex;
+            gap: 12px;
+        }
+
+        .progress-details span {
+            font-weight: 600;
+        }
+
+        .log-container {
+            background: white;
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .log-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .log-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-clear {
+            background: var(--gray-200);
+            border: none;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--gray-600);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-clear:active {
+            transform: scale(0.95);
+        }
+
+        .log-content {
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.6;
+            background: var(--gray-50);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid var(--gray-200);
+            word-break: break-word;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-entry.success { color: var(--success); }
+        .log-entry.error { color: var(--danger); }
+        .log-entry.info { color: var(--gray-600); }
+        .log-entry.warning { color: var(--warning); }
+        .log-entry.reset { color: #667eea; }
+        .log-entry.image { color: #34B7F1; }
+
+        .delay-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .delay-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .range-input {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--gray-200);
+            border-radius: 3px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+        }
+
+        .range-input::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: none;
+        }
+
+        .char-counter {
+            text-align: left;
+            font-size: 11px;
+            color: var(--gray-400);
+            margin-top: 4px;
+        }
+
+        .app-footer {
+            text-align: center;
+            padding: 12px 8px;
+            color: rgba(255,255,255,0.7);
+            font-size: 11px;
+        }
+
+        .app-footer p {
+            margin: 2px 0;
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: calc(16px + var(--safe-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            width: min(90%, 400px);
+            pointer-events: none;
+        }
+
+        .toast {
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease-out;
+            margin-bottom: 6px;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        .toast.info { background: var(--primary); }
+        .toast.warning { background: var(--warning); }
+        .toast.reset { background: #667eea; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .mt-8 { margin-top: 8px; }
+        .mb-8 { margin-bottom: 8px; }
+
+        .info-box {
+            background: #ebf8ff;
+            border: 1px solid var(--secondary);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: var(--gray-600);
+        }
+
+        .info-box .highlight {
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .reset-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .reset-options .form-group {
+            margin-bottom: 0;
+        }
+
+        .popup-helper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .popup-helper.active {
+            display: flex;
+        }
+
+        .popup-content {
+            background: white;
+            border-radius: var(--radius);
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .popup-content .popup-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .popup-content h3 {
+            color: var(--gray-800);
+            margin-bottom: 8px;
+        }
+
+        .popup-content p {
+            color: var(--gray-500);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .popup-content .btn {
+            width: auto;
+            padding: 8px 24px;
+            min-height: 40px;
+        }
+
+        .popup-content .btn-group {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .reset-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(102, 126, 234, 0.95);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .reset-overlay.active {
+            display: flex;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .reset-overlay .reset-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: spin 2s linear infinite;
+        }
+
+        .reset-overlay h2 {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .reset-overlay p {
+            color: rgba(255,255,255,0.8);
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .reset-overlay .progress-ring {
+            width: 80px;
+            height: 80px;
+            border: 6px solid rgba(255,255,255,0.2);
+            border-top: 6px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        .reset-overlay .progress-text {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .reset-overlay .progress-sub {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #0d1b2a 0%, #1b3a2a 100%);
+            }
+            
+            .app-header, .card, .progress-container, .log-container {
+                background: var(--gray-700);
+            }
+            
+            .logo-text h1, .card-header h2, .stat-value {
+                color: var(--gray-50);
+            }
+            
+            .form-textarea, .form-input {
+                background: var(--gray-600);
+                border-color: var(--gray-500);
+                color: var(--gray-50);
+            }
+            
+            .form-textarea::placeholder {
+                color: var(--gray-400);
+            }
+            
+            .form-textarea:focus, .form-input:focus {
+                background: var(--gray-600);
+                border-color: var(--primary);
+            }
+            
+            .file-upload-area {
+                background: var(--gray-600);
+                border-color: var(--gray-500);
+            }
+            
+            .file-upload-area.has-image {
+                border-color: var(--primary);
+                background: #1a3a2a;
+            }
+            
+            .upload-text {
+                color: var(--gray-300);
+            }
+            
+            .log-content {
+                background: var(--gray-600);
+            }
+            
+            .log-entry {
+                border-color: var(--gray-500);
+            }
+            
+            .log-entry.info {
+                color: var(--gray-300);
+            }
+            
+            .stat-item {
+                background: var(--gray-600);
+            }
+            
+            .status-badge.connected {
+                background: #1a3a2a;
+                color: #9ae6b4;
+            }
+            
+            .status-badge.disconnected {
+                background: #3a1a1a;
+                color: #fed7d7;
+            }
+            
+            .btn-secondary {
+                background: var(--gray-600);
+                color: var(--gray-300);
+            }
+            
+            .range-input {
+                background: var(--gray-500);
+            }
+            
+            .delay-value {
+                color: #9ae6b4;
+            }
+            
+            .info-box {
+                background: #1a2a3a;
+                border-color: var(--secondary);
+                color: var(--gray-300);
+            }
+            
+            .info-box .highlight {
+                color: #63b3ed;
+            }
+
+            .popup-content {
+                background: var(--gray-700);
+            }
+
+            .popup-content h3 {
+                color: var(--gray-50);
+            }
+
+            .popup-content p {
+                color: var(--gray-300);
+            }
+
+            .reset-overlay {
+                background: rgba(102, 126, 234, 0.95);
+            }
+
+            .image-preview-container {
+                border-color: var(--gray-500);
+                background: var(--gray-600);
+            }
+        }
+
+        @media (max-width: 380px) {
+            html { font-size: 13px; }
+            .logo-text h1 { font-size: 15px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+            .stat-item { padding: 6px 2px; }
+            .stat-value { font-size: 16px; }
+            .card { padding: 10px 12px; }
+            .reset-options { grid-template-columns: 1fr; }
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            .app-header { padding: 8px 12px; margin-bottom: 8px; }
+            .logo-text small { display: none; }
+            .card { padding: 8px 12px; margin-bottom: 8px; }
+            .card-header { margin-bottom: 6px; }
+            .card-header h2 { font-size: 13px; }
+            .form-textarea { min-height: 50px; }
+            .stats-grid { gap: 4px; }
+            .stat-item { padding: 4px; }
+            .stat-value { font-size: 14px; }
+            .log-content { max-height: 60px; }
+            .file-upload-area { padding: 8px; min-height: 50px; }
+            .btn { min-height: 36px; padding: 6px 12px; font-size: 12px; }
+            .image-preview-container img { max-height: 120px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة إعادة التعيين -->
+    <div class="reset-overlay" id="resetOverlay">
+        <div class="reset-icon">🔄</div>
+        <div class="progress-ring"></div>
+        <h2>🔄 جاري تصفير التطبيق</h2>
+        <p>سيتم مسح جميع البيانات وإعادة تشغيل التطبيق...</p>
+        <div class="progress-text" id="resetProgressText">0%</div>
+        <div class="progress-sub" id="resetStatusText">جاري التهيئة...</div>
+    </div>
+
+    <!-- نافذة تأكيد داخلية -->
+    <div class="popup-helper" id="confirmModal">
+        <div class="popup-content">
+            <div class="popup-icon" id="confirmIcon">❓</div>
+            <h3 id="confirmTitle">تأكيد</h3>
+            <p id="confirmMessage" style="text-align: center;"></p>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="confirmOkBtn">✅ نعم</button>
+                <button class="btn btn-secondary" id="confirmCancelBtn">❌ إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة مساعدة -->
+    <div class="popup-helper" id="popupHelper">
+        <div class="popup-content">
+            <div class="popup-icon" id="popupIcon">🖼️</div>
+            <h3 id="popupTitle">📱 تم فتح واتساب!</h3>
+            <p id="popupMessage">الرسالة جاهزة. أرفق الصورة يدوياً ثم اضغط على زر <strong>إرسال</strong> في واتساب.</p>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="popupConfirm">✅ تم الإرسال</button>
+                <button class="btn btn-secondary" id="popupSkip">⏭️ تخطي</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" id="appContainer">
+        <!-- الرأس -->
+        <header class="app-header">
+            <div class="logo-section">
+                <span class="logo-icon">📸</span>
+                <div class="logo-text">
+                    <h1>واتساب بلس</h1>
+                    <small>إرسال صور حقيقية JPG/PNG</small>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span class="status-badge connected" id="connectionStatus">⚡ نشط</span>
+            </div>
+        </header>
+
+        <!-- بطاقة المعلومات -->
+        <div class="card">
+            <div class="info-box">
+                <p>📤 <span class="highlight">إرسال رسائل إلى أرقام متعددة:</span></p>
+                <p>✅ يتم فتح <span class="highlight">محادثة واتساب جاهزة</span> لكل رقم</p>
+                <p>🌍 يُضاف <span class="highlight">رمز الدولة تلقائياً</span> للأرقام المحلية</p>
+                <p>📤 مع الصورة: اضغط زر <span class="highlight">«إرسال الصورة مع النص»</span> واختر واتساب من قائمة المشاركة — تُرفق الصورة <span class="highlight">فعلياً</span> وليس كنص</p>
+                <p>🔄 التصفير <span class="highlight">يدوي فقط</span> من زر «تصفير كامل» — لا يُمسح شيء تلقائياً بعد الإرسال</p>
+            </div>
+        </div>
+
+        <!-- بطاقة المستلمين والرسالة -->
+        <div class="card" id="mainCard">
+            <div class="card-header">
+                <span class="icon">📊</span>
+                <h2>قائمة المستلمين</h2>
+                <span class="badge" id="recipientsCount">0</span>
+            </div>
+            
+            <div class="form-group">
+                <label>📂 تحميل ملف الأرقام</label>
+                <div class="file-upload-wrapper">
+                    <input type="file" id="numbersFile" accept=".csv,.txt" class="file-input">
+                    <div class="file-upload-area">
+                        <span class="upload-icon">📁</span>
+                        <span class="upload-text" id="fileName">اختر ملف الأرقام</span>
+                        <span class="upload-hint">CSV, TXT (رقم واحد في كل سطر) - يُضاف رمز الدولة تلقائياً</span>
+                    </div>
+                </div>
+                <div id="filePreview" class="hidden" style="margin-top: 8px; background: var(--gray-50); border-radius: var(--radius-sm); padding: 8px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-500);">
+                        <span>📋 عدد الأرقام: <strong id="numbersCount">0</strong></span>
+                        <button class="btn-clear" id="clearNumbers" style="background: var(--danger); color: white;">🗑️ مسح</button>
+                    </div>
+                    <div id="numbersPreview" style="max-height: 60px; overflow-y: auto; font-size: 11px; color: var(--gray-400); margin-top: 4px;"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>📝 أو أدخل الأرقام يدوياً</label>
+                <textarea id="manualNumbers" rows="3" placeholder="أدخل رقم واحد في كل سطر&#10;مثال: 771234567" class="form-textarea" style="min-height: 60px;"></textarea>
+                <button class="btn btn-secondary" id="addNumbersBtn" style="margin-top: 6px; width: auto; padding: 6px 16px; min-height: 36px;">➕ إضافة الأرقام</button>
+            </div>
+
+            <div class="form-group">
+                <label>🌍 رمز الدولة (يُضاف تلقائياً إن لم يوجد)</label>
+                <select class="form-input" id="countryCode" style="font-size: 13px; padding: 8px;">
+                    <option value="967" selected>🇾🇪 اليمن +967</option>
+                    <option value="966">🇸🇦 السعودية +966</option>
+                    <option value="968">🇴🇲 عمان +968</option>
+                    <option value="965">🇰🇼 الكويت +965</option>
+                    <option value="974">🇶🇦 قطر +974</option>
+                    <option value="973">🇧🇭 البحرين +973</option>
+                    <option value="971">🇦🇪 الإمارات +971</option>
+                    <option value="962">🇯🇴 الأردن +962</option>
+                    <option value="964">🇮🇶 العراق +964</option>
+                    <option value="961">🇱🇧 لبنان +961</option>
+                    <option value="963">🇸🇾 سوريا +963</option>
+                    <option value="970">🇵🇸 فلسطين +970</option>
+                    <option value="20">🇪🇬 مصر +20</option>
+                    <option value="218">🇱🇾 ليبيا +218</option>
+                    <option value="216">🇹🇳 تونس +216</option>
+                    <option value="213">🇩🇿 الجزائر +213</option>
+                    <option value="212">🇲🇦 المغرب +212</option>
+                    <option value="249">🇸🇩 السودان +249</option>
+                    <option value="90">🇹🇷 تركيا +90</option>
+                    <option value="98">🇮🇷 إيران +98</option>
+                    <option value="91">🇮🇳 الهند +91</option>
+                    <option value="92">🇵🇰 باكستان +92</option>
+                    <option value="1">🇺🇸 أمريكا/كندا +1</option>
+                    <option value="44">🇬🇧 بريطانيا +44</option>
+                    <option value="49">🇩🇪 ألمانيا +49</option>
+                </select>
+            </div>
+
+            <!-- إرفاق صورة -->
+            <div class="form-group">
+                <label>📸 إرفاق صورة (JPG / PNG)</label>
+                <div class="file-upload-wrapper">
+                    <input type="file" id="imageFile" accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,image/*" class="file-input">
+                    <div class="file-upload-area" id="imageUploadArea">
+                        <span class="upload-icon">📸</span>
+                        <span class="upload-text" id="imageName">اختر صورة JPG أو PNG</span>
+                        <span class="upload-hint">JPG, PNG, GIF, WebP, BMP</span>
+                    </div>
+                </div>
+                <div class="image-preview-container" id="imagePreviewContainer">
+                    <button class="remove-image" id="removeImageBtn">✕</button>
+                    <img id="imagePreview" src="" alt="معاينة الصورة">
+                    <div class="image-info">
+                        <span id="imageFileName">اسم الملف</span>
+                        <span class="image-size" id="imageFileSize">الحجم: 0 KB</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>✏️ نص الرسالة</label>
+                <textarea id="message" rows="4" placeholder="اكتب رسالتك هنا..." class="form-textarea"></textarea>
+                <div class="char-counter"><span id="charCount">0</span> حرف</div>
+            </div>
+
+            <div class="form-group">
+                <label>⏱️ وقت التأخير بين الرسائل</label>
+                <div class="delay-control">
+                    <span class="delay-value" id="delayDisplay">5</span>
+                    <span style="font-size: 13px; color: var(--gray-500);">ثواني</span>
+                </div>
+                <input type="range" id="delaySlider" min="3" max="15" value="5" class="range-input">
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--gray-400); margin-top: 2px;">
+                    <span>3 ث</span>
+                    <span>15 ث</span>
+                </div>
+            </div>
+
+            <!-- وضع الانتظار -->
+            <div class="form-group">
+                <label>⏱️ وضع الانتظار (للرسائل النصية — الصور تتطلب تأكيداً يدوياً)</label>
+                <select class="form-input" id="waitMode" style="font-size: 13px; padding: 8px;">
+                    <option value="auto">تلقائي (ينتظر ثم ينتقل)</option>
+                    <option value="manual">يدوي (تأكيد من المستخدم)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- بطاقة الإحصائيات -->
+        <div class="card" id="statsCard">
+            <div class="card-header">
+                <span class="icon">📈</span>
+                <h2>الإحصائيات</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item" id="statRecipients">
+                    <span class="stat-value" id="recipientCount">0</span>
+                    <span class="stat-label">مستلمين</span>
+                </div>
+                <div class="stat-item" id="statTime">
+                    <span class="stat-value" id="estimatedTime">0 د</span>
+                    <span class="stat-label">وقت متوقع</span>
+                </div>
+                <div class="stat-item" id="statSent">
+                    <span class="stat-value" id="totalSent">0</span>
+                    <span class="stat-label">مرسل</span>
+                </div>
+                <div class="stat-item" id="statImages">
+                    <span class="stat-value" id="totalImages">0</span>
+                    <span class="stat-label">صور مرسلة</span>
+                </div>
+            </div>
+            <div class="action-row">
+                <button class="btn btn-send" id="sendBtn" disabled>🚀 بدء الإرسال</button>
+                <button class="btn btn-stop hidden" id="stopBtn">⏹️ إيقاف</button>
+            </div>
+            <div class="action-row" style="margin-top: 8px;">
+                <button class="btn btn-reset" id="manualResetBtn">🔄 تصفير كامل</button>
+            </div>
+        </div>
+
+        <!-- شريط التقدم -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-info">
+                <span id="progressText">0%</span>
+                <div class="progress-details">
+                    <span>✅ <span id="sentCount">0</span></span>
+                    <span>📸 <span id="imageCount">0</span></span>
+                    <span>⏳ <span id="remainingCount">0</span></span>
+                    <span>⏱️ <span id="elapsedTime">0s</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- السجل -->
+        <div class="log-container" id="logContainer">
+            <div class="log-header">
+                <span class="log-title">📋 سجل العمليات</span>
+                <div class="log-actions">
+                    <button class="btn-clear" id="clearLogs">🗑️ مسح</button>
+                </div>
+            </div>
+            <div class="log-content" id="logContent">
+                <div class="log-entry info">[🚀] مرحباً بك في واتساب بلس</div>
+                <div class="log-entry info">[📎] تُرفق الصورة يدوياً في كل محادثة</div>
+            </div>
+        </div>
+
+        <!-- التذييل -->
+        <footer class="app-footer">
+            <p>📤 فتح محادثات واتساب جاهزة + أرقام متعددة + مشاركة صور حقيقية</p>
+            <p>⚠️ استخدم بحذر - سيتم فتح محادثة لكل رقم</p>
+            <p style="font-size: 9px; opacity: 0.5;">الإصدار 15.0 - تصفير يدوي + مشاركة صور حقيقية</p>
+        </footer>
+    </div>
+
+    <!-- حاوية الإشعارات -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        /**
+         * واتساب بلس - فتح محادثات واتساب جاهزة لكل رقم
+         * الإصدار 12.0 - إصلاحات:
+         * 1. إصلاح التشفير المزدوج للنص (كان يصل مشوهاً %D9...)
+         * 2. تصحيح استعادة البيانات الفارغة بعد التصفير
+         * 3. معالجة الملف غير الصالح
+         * 4. توحيد صيغة الأرقام (إزالة 00 البادئة)
+         * 5. حفظ وضع الانتظار
+         * ملاحظة: رابط wa.me لا يرفق الصورة تلقائياً - تُرفق يدوياً
+         */
+        class WhatsAppRealImageApp {
+            constructor() {
+                this.elements = {
+                    connectionStatus: document.getElementById('connectionStatus'),
+                    numbersFile: document.getElementById('numbersFile'),
+                    fileName: document.getElementById('fileName'),
+                    filePreview: document.getElementById('filePreview'),
+                    numbersPreview: document.getElementById('numbersPreview'),
+                    numbersCount: document.getElementById('numbersCount'),
+                    clearNumbers: document.getElementById('clearNumbers'),
+                    manualNumbers: document.getElementById('manualNumbers'),
+                    addNumbersBtn: document.getElementById('addNumbersBtn'),
+                    imageFile: document.getElementById('imageFile'),
+                    imageName: document.getElementById('imageName'),
+                    imageUploadArea: document.getElementById('imageUploadArea'),
+                    imagePreviewContainer: document.getElementById('imagePreviewContainer'),
+                    imagePreview: document.getElementById('imagePreview'),
+                    imageFileName: document.getElementById('imageFileName'),
+                    imageFileSize: document.getElementById('imageFileSize'),
+                    removeImageBtn: document.getElementById('removeImageBtn'),
+                    message: document.getElementById('message'),
+                    charCount: document.getElementById('charCount'),
+                    delaySlider: document.getElementById('delaySlider'),
+                    delayDisplay: document.getElementById('delayDisplay'),
+                    waitMode: document.getElementById('waitMode'),
+                    recipientCount: document.getElementById('recipientCount'),
+                    estimatedTime: document.getElementById('estimatedTime'),
+                    totalSent: document.getElementById('totalSent'),
+                    totalImages: document.getElementById('totalImages'),
+                    sendBtn: document.getElementById('sendBtn'),
+                    stopBtn: document.getElementById('stopBtn'),
+                    manualResetBtn: document.getElementById('manualResetBtn'),
+                    progressContainer: document.getElementById('progressContainer'),
+                    progressFill: document.getElementById('progressFill'),
+                    progressText: document.getElementById('progressText'),
+                    sentCount: document.getElementById('sentCount'),
+                    imageCount: document.getElementById('imageCount'),
+                    remainingCount: document.getElementById('remainingCount'),
+                    elapsedTime: document.getElementById('elapsedTime'),
+                    logContent: document.getElementById('logContent'),
+                    clearLogs: document.getElementById('clearLogs'),
+                    recipientsCount: document.getElementById('recipientsCount'),
+                    toastContainer: document.getElementById('toastContainer'),
+                    popupHelper: document.getElementById('popupHelper'),
+                    popupIcon: document.getElementById('popupIcon'),
+                    popupTitle: document.getElementById('popupTitle'),
+                    popupMessage: document.getElementById('popupMessage'),
+                    popupConfirm: document.getElementById('popupConfirm'),
+                    popupSkip: document.getElementById('popupSkip'),
+                    countryCode: document.getElementById('countryCode'),
+                    confirmModal: document.getElementById('confirmModal'),
+                    confirmTitle: document.getElementById('confirmTitle'),
+                    confirmMessage: document.getElementById('confirmMessage'),
+                    confirmOkBtn: document.getElementById('confirmOkBtn'),
+                    confirmCancelBtn: document.getElementById('confirmCancelBtn'),
+                    resetOverlay: document.getElementById('resetOverlay'),
+                    resetProgressText: document.getElementById('resetProgressText'),
+                    resetStatusText: document.getElementById('resetStatusText'),
+                    appContainer: document.getElementById('appContainer'),
+                    mainCard: document.getElementById('mainCard'),
+                    statsCard: document.getElementById('statsCard'),
+                    logContainer: document.getElementById('logContainer'),
+                };
+
+                this.state = {
+                    isSending: false,
+                    isStopped: false,
+                    isWaiting: false,
+                    isResetting: false,
+                    numbers: [],
+                    imageFile: null,
+                    imageData: null,
+                    imageName: '',
+                    imageSize: 0,
+                    currentProgress: { total: 0, current: 0, sent: 0, images: 0 },
+                    totalSent: 0,
+                    totalImages: 0,
+                    startTime: null,
+                    currentNumber: '',
+                    resolveWait: null,
+                    resetCount: 0,
+                    pendingStart: false,
+                    sendConfig: null,
+                };
+
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.loadSavedData();
+                this.updateStats();
+                this.addLog('📱 جاهز - سيتم فتح محادثة واتساب لكل رقم', 'info');
+                this.addLog('📎 تذكير: أرفق الصورة يدوياً في كل محادثة', 'image');
+
+                setInterval(() => {
+                    if (this.state.isSending && this.state.startTime) {
+                        const elapsed = Math.floor((Date.now() - this.state.startTime) / 1000);
+                        this.elements.elapsedTime.textContent = this.formatTime(elapsed);
+                    }
+                }, 1000);
+            }
+
+            bindEvents() {
+                this.elements.numbersFile.addEventListener('change', (e) => this.handleFileUpload(e));
+                this.elements.clearNumbers.addEventListener('click', () => this.clearNumbers());
+                this.elements.addNumbersBtn.addEventListener('click', () => this.addManualNumbers());
+
+                this.elements.imageFile.addEventListener('change', (e) => this.handleImageUpload(e));
+                this.elements.removeImageBtn.addEventListener('click', () => this.removeImage());
+
+                this.elements.message.addEventListener('input', () => {
+                    this.elements.charCount.textContent = this.elements.message.value.length;
+                    this.saveData();
+                });
+
+                this.elements.delaySlider.addEventListener('input', () => {
+                    this.elements.delayDisplay.textContent = this.elements.delaySlider.value;
+                    this.updateStats();
+                    this.saveData();
+                });
+
+                this.elements.sendBtn.addEventListener('click', () => this.startSending());
+                this.elements.stopBtn.addEventListener('click', () => this.stopSending());
+                this.elements.manualResetBtn.addEventListener('click', () => this.fullReset());
+                this.elements.clearLogs.addEventListener('click', () => {
+                    this.elements.logContent.innerHTML = '';
+                    this.addLog('🗑️ تم مسح السجل', 'info');
+                });
+
+                this.elements.popupConfirm.addEventListener('click', () => {
+                    this.elements.popupHelper.classList.remove('active');
+                    if (this.state.resolveWait) {
+                        this.state.resolveWait(true);
+                        this.state.resolveWait = null;
+                    }
+                });
+
+                this.elements.popupSkip.addEventListener('click', () => {
+                    this.elements.popupHelper.classList.remove('active');
+                    if (this.state.resolveWait) {
+                        this.state.resolveWait(false);
+                        this.state.resolveWait = null;
+                    }
+                });
+
+                // تفويض: زر المشاركة يُنشأ ديناميكياً داخل النافذة
+                this.elements.popupHelper.addEventListener('click', (e) => {
+                    if (e.target && e.target.id === 'shareImageBtn') {
+                        this.shareImageToWhatsApp();
+                    }
+                });
+
+                this.elements.waitMode.addEventListener('change', () => this.saveData());
+                this.elements.countryCode.addEventListener('change', () => {
+                    this.saveData();
+                    this.addLog(`🌍 تم اختيار رمز الدولة: +${this.elements.countryCode.value}`, 'info');
+                });
+
+                // نافذة التأكيد الداخلية (بديل confirm())
+                this.elements.confirmOkBtn.addEventListener('click', () => this.closeConfirm(true));
+                this.elements.confirmCancelBtn.addEventListener('click', () => this.closeConfirm(false));
+            }
+
+            /**
+             * توحيد الأرقام إلى الصيغة الدولية
+             * - يزيل كل ما ليس رقماً + يزيل 00 أو 0 البادئة
+             * - يضيف رمز الدولة المختار تلقائياً إذا لم يوجد
+             * - يرفض الأرقام القصيرة جداً (أقل من 7 خانات وطنية)
+             */
+            normalizeNumber(raw) {
+                let digits = String(raw || '').replace(/\D/g, '').replace(/^00/, '').replace(/^0/, '');
+                if (!digits) return null;
+
+                // الرقم الوطني (بدون رمز الدولة) يجب أن يكون 7-13 خانة
+                if (digits.length < 7 || digits.length > 13) return null;
+
+                const code = this.elements.countryCode.value;
+                // رموز دول معروفة — إذا بدأ الرقم برمز كامل يُحترم كما هو
+                const knownCodes = ['966','967','968','965','974','973','971','970','972','962','964','961','963','249','212','213','216','218','20','90','98','91','92','44','49','33','34','39','61','62','63','64','65','66','81','84','86'];
+
+                if (!digits.startsWith(code)) {
+                    // 3 خانات: رقم دولي كامل إذا كان ≥ 10 خانات — خانتان: إذا كان ≥ 11 خانة
+                    const hasOwnCode = knownCodes.some(c => {
+                        const minLen = c.length === 3 ? 10 : 11;
+                        return digits.startsWith(c) && digits.length >= minLen;
+                    });
+                    if (!hasOwnCode) {
+                        digits = code + digits;
+                    }
+                }
+
+                return (digits.length >= 8 && digits.length <= 15) ? digits : null;
+            }
+
+            showConfirm(title, messageHtml, okText = '✅ نعم', cancelText = '❌ إلغاء') {
+                return new Promise((resolve) => {
+                    this._confirmResolve = resolve;
+                    this.elements.confirmTitle.textContent = title;
+                    this.elements.confirmMessage.innerHTML = messageHtml;
+                    this.elements.confirmOkBtn.textContent = okText;
+                    this.elements.confirmCancelBtn.textContent = cancelText;
+                    this.elements.confirmModal.classList.add('active');
+                });
+            }
+
+            closeConfirm(result) {
+                const config = this.state.sendConfig;
+                const pending = this.state.pendingStart;
+                this.state.pendingStart = false;
+                this.state.sendConfig = null;
+                this.elements.confirmModal.classList.remove('active');
+
+                if (result && pending && config) {
+                    // بدء الإرسال مباشرة داخل نقرة الزر — سياق مستخدم حقيقي
+                    // فلا يحجب المتصفح فتح واتساب للرقم الأول
+                    this.beginSend(config);
+                    return;
+                }
+
+                if (this._confirmResolve) {
+                    this._confirmResolve(result);
+                    this._confirmResolve = null;
+                }
+            }
+
+            loadSavedData() {
+                try {
+                    const saved = localStorage.getItem('whatsappRealImage_data');
+                    if (saved) {
+                        const data = JSON.parse(saved);
+                        // إصلاح: المصفوفة الفارغة تعتبر true — نتحقق من الطول أيضاً
+                        if (data.numbers && data.numbers.length > 0) {
+                            this.state.numbers = data.numbers
+                                .map(n => this.normalizeNumber(n))
+                                .filter(Boolean);
+                            if (this.state.numbers.length > 0) {
+                                this.displayNumbers(this.state.numbers);
+                            }
+                        }
+                        if (data.countryCode) {
+                            this.elements.countryCode.value = data.countryCode;
+                        }
+                        if (data.message) {
+                            this.elements.message.value = data.message;
+                            this.elements.charCount.textContent = data.message.length;
+                        }
+                        if (data.delay) {
+                            this.elements.delaySlider.value = data.delay;
+                            this.elements.delayDisplay.textContent = data.delay;
+                        }
+
+                        if (data.totalSent) {
+                            this.state.totalSent = data.totalSent;
+                            this.elements.totalSent.textContent = data.totalSent;
+                        }
+                        if (data.totalImages) {
+                            this.state.totalImages = data.totalImages;
+                            this.elements.totalImages.textContent = data.totalImages;
+                        }
+                        if (data.imageData) {
+                            this.state.imageData = data.imageData;
+                            this.state.imageName = data.imageName || 'صورة';
+                            this.state.imageSize = data.imageSize || 0;
+                            this.elements.imagePreview.src = data.imageData;
+                            this.elements.imageFileName.textContent = this.state.imageName;
+                            this.elements.imageFileSize.textContent = `الحجم: ${this.formatFileSize(this.state.imageSize)}`;
+                            this.elements.imagePreviewContainer.classList.add('active');
+                            this.elements.imageUploadArea.classList.add('has-image');
+                            this.elements.imageName.textContent = `📸 ${this.state.imageName}`;
+                            // إعادة بناء ملف الصورة من البيانات المحفوظة حتى يعمل زر المشاركة
+                            this.state.imageFile = this.dataURLtoFile(data.imageData, this.state.imageName || 'image.jpg');
+                        }
+                        this.addLog('📂 تم استعادة البيانات المحفوظة', 'info');
+                    }
+                } catch (e) {
+                    console.error('Error loading saved data:', e);
+                }
+            }
+
+            saveData() {
+                try {
+                    const data = {
+                        numbers: this.state.numbers,
+                        message: this.elements.message.value,
+                        delay: this.elements.delaySlider.value,
+                        totalSent: this.state.totalSent,
+                        totalImages: this.state.totalImages,
+                        imageData: this.state.imageData,
+                        imageName: this.state.imageName,
+                        imageSize: this.state.imageSize,
+                        resetCount: this.state.resetCount,
+                        countryCode: this.elements.countryCode.value,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('whatsappRealImage_data', JSON.stringify(data));
+                } catch (e) {
+                    console.error('Error saving data:', e);
+                }
+            }
+
+            handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) {
+                    this.elements.fileName.textContent = 'اختر ملف الأرقام';
+                    this.elements.filePreview.classList.add('hidden');
+                    this.state.numbers = [];
+                    this.updateStats();
+                    return;
+                }
+
+                this.elements.fileName.textContent = file.name;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    const lines = content.split('\n')
+                        .filter(line => line.trim())
+                        .map(line => this.normalizeNumber(line))
+                        .filter(Boolean);
+
+                    if (lines.length === 0) {
+                        this.showToast('⚠️ لم يتم العثور على أرقام صالحة', 'warning');
+                        // إصلاح: إعادة تعيين حقل الملف حتى يمكن اختيار نفس الملف مجدداً
+                        this.elements.numbersFile.value = '';
+                        this.elements.fileName.textContent = 'اختر ملف الأرقام';
+                        return;
+                    }
+
+                    this.state.numbers = lines;
+                    this.displayNumbers(lines);
+                    this.saveData();
+                    this.addLog(`📊 تم تحميل ${lines.length} رقم (بالصيغة الدولية)`, 'success');
+                    this.showToast(`✅ تم تحميل ${lines.length} رقم`, 'success');
+                };
+                reader.readAsText(file);
+            }
+
+            addManualNumbers() {
+                const text = this.elements.manualNumbers.value.trim();
+                if (!text) {
+                    this.showToast('⚠️ الرجاء إدخال أرقام', 'warning');
+                    return;
+                }
+
+                const lines = text.split('\n')
+                    .filter(line => line.trim())
+                    .map(line => this.normalizeNumber(line))
+                    .filter(Boolean);
+
+                if (lines.length === 0) {
+                    this.showToast('⚠️ لم يتم العثور على أرقام صالحة (يجب أن يكون الرقم 8-15 خانة)', 'warning');
+                    return;
+                }
+
+                this.state.numbers = [...this.state.numbers, ...lines];
+                this.displayNumbers(this.state.numbers);
+                this.elements.manualNumbers.value = '';
+                this.saveData();
+                this.addLog(`📊 تم إضافة ${lines.length} رقم يدوياً (بالصيغة الدولية)`, 'success');
+                this.showToast(`✅ تم إضافة ${lines.length} رقم`, 'success');
+            }
+
+            async clearNumbers() {
+                if (this.state.numbers.length === 0) return;
+                const ok = await this.showConfirm(
+                    '🗑️ مسح الأرقام',
+                    `سيتم حذف <strong>${this.state.numbers.length}</strong> رقم. متابعة؟`,
+                    '🗑️ مسح',
+                    '❌ إلغاء'
+                );
+                if (!ok) return;
+                this.state.numbers = [];
+                this.elements.filePreview.classList.add('hidden');
+                this.elements.fileName.textContent = 'اختر ملف الأرقام';
+                this.updateStats();
+                this.saveData();
+                this.addLog('🗑️ تم مسح جميع الأرقام', 'info');
+            }
+
+            displayNumbers(numbers) {
+                const preview = this.elements.numbersPreview;
+                const maxDisplay = 20;
+                preview.innerHTML = numbers.slice(0, maxDisplay).map(num => 
+                    `<div>${num}</div>`
+                ).join('');
+
+                if (numbers.length > maxDisplay) {
+                    preview.innerHTML += `<div style="color: var(--gray-400);">... و ${numbers.length - maxDisplay} رقم آخر</div>`;
+                }
+
+                this.elements.numbersCount.textContent = numbers.length;
+                this.elements.recipientsCount.textContent = numbers.length;
+                this.elements.filePreview.classList.remove('hidden');
+                this.updateStats();
+                this.elements.sendBtn.disabled = false;
+            }
+
+            handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
+                if (!validTypes.includes(file.type)) {
+                    this.showToast('⚠️ يرجى اختيار صورة بصيغة JPG أو PNG', 'warning');
+                    this.elements.imageFile.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.state.imageData = e.target.result;
+                    this.state.imageFile = file;
+                    this.state.imageName = file.name;
+                    this.state.imageSize = file.size;
+                    
+                    this.elements.imagePreview.src = e.target.result;
+                    this.elements.imageFileName.textContent = file.name;
+                    this.elements.imageFileSize.textContent = `الحجم: ${this.formatFileSize(file.size)}`;
+                    this.elements.imagePreviewContainer.classList.add('active');
+                    this.elements.imageUploadArea.classList.add('has-image');
+                    this.elements.imageName.textContent = `📸 ${file.name}`;
+                    
+                    const ext = file.name.split('.').pop().toUpperCase();
+                    this.addLog(`📸 تم تحميل صورة: ${file.name} (${ext})`, 'image');
+                    this.showToast(`✅ تم تحميل الصورة: ${file.name}`, 'success');
+                    this.saveData();
+                };
+                reader.readAsDataURL(file);
+            }
+
+            formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / 1048576).toFixed(1) + ' MB';
+            }
+
+            /**
+             * إعادة بناء ملف من بيانات Base64 المحفوظة
+             * (حتى يعمل زر المشاركة بعد تحديث الصفحة)
+             */
+            dataURLtoFile(dataUrl, filename) {
+                if (!dataUrl) return null;
+                try {
+                    const arr = dataUrl.split(',');
+                    const mime = (arr[0].match(/:(.*?);/) || [])[1] || 'image/jpeg';
+                    const bstr = atob(arr[1]);
+                    let n = bstr.length;
+                    const u8arr = new Uint8Array(n);
+                    while (n--) u8arr[n] = bstr.charCodeAt(n);
+                    return new File([u8arr], filename || 'image.jpg', { type: mime });
+                } catch (e) {
+                    console.error('Error rebuilding file:', e);
+                    return null;
+                }
+            }
+
+            getImageFile() {
+                if (this.state.imageFile) return this.state.imageFile;
+                if (this.state.imageData) {
+                    return this.dataURLtoFile(this.state.imageData, this.state.imageName || 'image.jpg');
+                }
+                return null;
+            }
+
+            /**
+             * إرسال الصورة فعلياً عبر نظام المشاركة في الجوال:
+             * تفتح قائمة المشاركة ويختار المستخدم واتساب — تُرفق الصورة مع النص تلقائياً
+             */
+            async shareImageToWhatsApp() {
+                const file = this.getImageFile();
+                if (!file) {
+                    this.showToast('⚠️ لا توجد صورة للمشاركة', 'warning');
+                    return;
+                }
+                const message = this.elements.message.value;
+                try {
+                    if (typeof navigator.share !== 'function' || !navigator.canShare({ files: [file] })) {
+                        this.showToast('⚠️ المشاركة غير مدعومة في هذا المتصفح — أرفق الصورة يدوياً', 'warning');
+                        return;
+                    }
+                    await navigator.share({
+                        title: 'واتساب بلس',
+                        text: message,
+                        files: [file]
+                    });
+                    this.addLog('📤 تم فتح المشاركة — اختر واتساب لإرسال الصورة', 'success');
+                    this.showToast('📤 اختر واتساب من قائمة المشاركة', 'success');
+                } catch (err) {
+                    // إلغاء المشاركة ليس خطأ
+                    if (err.name !== 'AbortError') {
+                        this.addLog(`❌ فشلت المشاركة: ${err.message}`, 'error');
+                    }
+                }
+            }
+
+            removeImage() {
+                this.state.imageFile = null;
+                this.state.imageData = null;
+                this.state.imageName = '';
+                this.state.imageSize = 0;
+                this.elements.imageFile.value = '';
+                this.elements.imagePreview.src = '';
+                this.elements.imagePreviewContainer.classList.remove('active');
+                this.elements.imageUploadArea.classList.remove('has-image');
+                this.elements.imageName.textContent = 'اختر صورة JPG أو PNG';
+                this.addLog('📸 تم إزالة الصورة', 'info');
+                this.saveData();
+            }
+
+            updateStats() {
+                const count = this.state.numbers.length;
+                const delay = parseInt(this.elements.delaySlider.value);
+                const totalSeconds = count * (delay + 2);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+
+                this.elements.recipientCount.textContent = count;
+                this.elements.estimatedTime.textContent = minutes > 0 ? 
+                    `${minutes} دقيقة` : 
+                    `${seconds} ثانية`;
+            }
+
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                if (mins > 0) {
+                    return `${mins}m ${secs}s`;
+                }
+                return `${secs}s`;
+            }
+
+            startSending() {
+                if (this.state.isSending) return;
+
+                if (this.state.numbers.length === 0) {
+                    this.showToast('❌ لا توجد أرقام للإرسال', 'error');
+                    return;
+                }
+
+                const message = this.elements.message.value.trim();
+                if (!message) {
+                    this.showToast('❌ الرجاء كتابة نص الرسالة', 'error');
+                    return;
+                }
+
+                const hasImage = this.state.imageData !== null;
+                if (!hasImage) {
+                    this.addLog('📝 سيتم الإرسال بدون صورة (الصورة اختيارية)', 'info');
+                }
+
+                const count = this.state.numbers.length;
+                const delay = parseInt(this.elements.delaySlider.value);
+                const totalTime = count * (delay + 2);
+                const minutes = Math.floor(totalTime / 60);
+                const waitMode = this.elements.waitMode.value;
+
+                let confirmMsg = `📤 إرسال <strong>${count}</strong> رسالة (ستفتح محادثة لكل رقم)<br>`;
+                confirmMsg += hasImage
+                    ? `🖼️ الصورة: <strong>${this.state.imageName}</strong><br>`
+                    : `🚫 بدون صورة<br>`;
+                confirmMsg += `⏱️ المدة التقريبية: <strong>${minutes} دقيقة</strong><br>`;
+                confirmMsg += `🔄 وضع الانتظار: <strong>${waitMode === 'auto' ? 'تلقائي' : 'يدوي'}</strong>`;
+
+                // ننتظر تأكيد المستخدم فقط — وعند ضغطه "بدء الإرسال" تبدأ الحلقة
+                // مباشرةً داخل نقرة الزر (سياق مستخدم حقيقي) حتى لا يحجب المتصفح الفتح
+                this.state.sendConfig = {
+                    numbers: [...this.state.numbers],
+                    rawMessage: message,
+                    delay,
+                    waitMode,
+                    hasImage
+                };
+                this.state.pendingStart = true;
+
+                this.showConfirm(
+                    '🚀 تأكيد الإرسال',
+                    confirmMsg,
+                    '✅ بدء الإرسال',
+                    '❌ إلغاء'
+                );
+            }
+
+            beginSend(config) {
+                const { numbers } = config;
+                this.state.isSending = true;
+                this.state.isStopped = false;
+                this.state.startTime = Date.now();
+
+                this.elements.sendBtn.disabled = true;
+                this.elements.sendBtn.classList.add('loading');
+                this.elements.sendBtn.innerHTML = '<span class="spinner"></span> 🚀 جاري الإرسال...';
+                this.elements.stopBtn.classList.remove('hidden');
+                this.elements.progressContainer.classList.add('active');
+
+                this.updateProgress({ total: numbers.length, current: 0, sent: 0, images: 0 });
+                this.saveData();
+
+                // تُستدعى بشكل متزامن داخل نقرة المستخدم → أول فتحة واتساب لا تُحجب
+                this.sendLoop(config);
+            }
+
+            async sendLoop(config) {
+                const { numbers, rawMessage, delay, waitMode, hasImage } = config;
+                let sent = 0, images = 0;
+
+                for (let i = 0; i < numbers.length; i++) {
+                    if (this.state.isStopped) {
+                        this.addLog('⏹️ تم إيقاف الإرسال', 'info');
+                        break;
+                    }
+
+                    const number = numbers[i];
+                    this.state.currentNumber = number;
+
+                    // النص يُشفر مرة واحدة فقط — بدون أي إضافات أو نصوص مزيفة
+                    const url = `https://wa.me/${number}?text=${encodeURIComponent(rawMessage)}`;
+
+                    // دعم مشاركة الصورة الحقيقية عبر نظام المشاركة (Android/iOS)
+                    const imgFile = this.getImageFile();
+                    const canShare = hasImage && imgFile && typeof navigator.canShare === 'function'
+                        && navigator.canShare({ files: [imgFile] });
+
+                    let win = null;
+                    let popupBlocked = false;
+                    if (!canShare) {
+                        // بدون مشاركة صور: نحاول فتح واتساب بالنص تلقائياً
+                        try {
+                            win = window.open(url, '_blank');
+                        } catch (e) {
+                            popupBlocked = true;
+                        }
+                        if (!win || win.closed) popupBlocked = true;
+                        if (popupBlocked) {
+                            this.addLog(`⚠️ المتصفح منع الفتح التلقائي — استخدم زر الفتح للرقم ${number}`, 'warning');
+                        } else {
+                            this.addLog(`📱 تم فتح واتساب للرقم ${number}`, 'success');
+                        }
+                    }
+                    if (hasImage) {
+                        images++;
+                        this.addLog(canShare
+                            ? `📤 اضغط زر المشاركة لإرسال الصورة ${this.state.imageName} إلى ${number}`
+                            : `📎 أرفق الصورة ${this.state.imageName} يدوياً في محادثة ${number}`, 'image');
+                    }
+
+                    // نافذة لكل رقم
+                    const linkBtn = `<a href="${url}" target="_blank" rel="noopener" style="display:block;margin:8px auto;padding:12px 16px;background:#34B7F1;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;text-align:center;width:90%;font-size:14px;">💬 نص فقط (بدون صورة)</a>`;
+                    const shareBtn = `<button id="shareImageBtn" type="button" style="display:block;margin:12px auto;padding:14px 16px;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:10px;font-weight:700;text-align:center;width:92%;font-size:15px;cursor:pointer;">📤 إرسال الصورة مع النص</button>`;
+                    this.elements.popupIcon.textContent = canShare ? '📤' : (popupBlocked ? '🔗' : '📱');
+                    this.elements.popupTitle.textContent = canShare
+                        ? `📤 أرسل الصورة إلى ${number}`
+                        : (popupBlocked ? `⚠️ اضغط الزر لفتح محادثة ${number}` : `📱 تم فتح واتساب — ${number}`);
+                    this.elements.popupMessage.innerHTML = `
+                        <div style="direction:rtl;text-align:center;">
+                            ${canShare ? `
+                                ${shareBtn}
+                                <p style="font-size:12px;margin-top:6px;">اضغط الزر ثم اختر <strong>واتساب</strong> من قائمة المشاركة — ستُرفق الصورة مع النص تلقائياً.</p>
+                                ${linkBtn}
+                                <p style="font-size:11px;color:var(--gray-400);margin-top:6px;">أو أرسل النص فقط بدون صورة</p>
+                            ` : `
+                                ${popupBlocked
+                                    ? `<p style="color:#f6ad55;font-size:13px;margin-bottom:4px;">المتصفح منع الفتح التلقائي — اضغط الزر الأخضر:</p>`
+                                    : `<p style="color:var(--success);font-size:13px;margin-bottom:4px;">إذا لم تُفتح المحادثة تلقائياً اضغط الزر الأخضر:</p>`}
+                                ${linkBtn}
+                                ${hasImage
+                                    ? `<p style="font-size:12px;margin-top:8px;">📎 أرفق الصورة: <strong>${this.state.imageName}</strong> ثم أرسل</p>`
+                                    : `<p style="font-size:12px;margin-top:8px;">أرسل الرسالة في واتساب ثم اضغط <strong>تم الإرسال</strong></p>`}
+                            `}
+                        </div>
+                    `;
+                    this.elements.popupHelper.classList.add('active');
+
+                    if (canShare) {
+                        // مع الصورة: انتظار مشاركة المستخدم ثم تأكيده
+                        const confirmed = await this.waitForConfirmation();
+                        if (confirmed) {
+                            sent++;
+                            this.addLog(`✅ تم تأكيد إرسال الصورة والرسالة إلى ${number}`, 'success');
+                        } else {
+                            this.addLog(`⏭️ تم تخطي الرقم ${number}`, 'warning');
+                        }
+                    } else if (waitMode === 'manual') {
+                        const confirmed = await this.waitForConfirmation();
+                        if (confirmed) {
+                            sent++;
+                            this.addLog(`✅ تم تأكيد إرسال الرسالة إلى ${number}`, 'success');
+                        } else {
+                            this.addLog(`⏭️ تم تخطي الرقم ${number}`, 'warning');
+                        }
+                    } else {
+                        this.addLog(`⏳ انتظار ${delay} ثانية للرقم ${number}...`, 'info');
+                        await new Promise(resolve => setTimeout(resolve, delay * 1000));
+                        sent++;
+                        this.addLog(`✅ تم إرسال الرسالة إلى ${number}`, 'success');
+                    }
+
+                    this.elements.popupHelper.classList.remove('active');
+
+                    try {
+                        if (win && !win.closed) {
+                            win.close();
+                        }
+                    } catch (e) {}
+
+                    this.updateProgress({
+                        total: numbers.length,
+                        current: i + 1,
+                        sent: sent,
+                        images: images
+                    });
+
+                    this.elements.totalSent.textContent = this.state.totalSent + sent;
+                    this.elements.totalImages.textContent = this.state.totalImages + images;
+
+                    if (i < numbers.length - 1 && !this.state.isStopped) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+
+                this.state.totalSent += sent;
+                this.state.totalImages += images;
+                this.elements.totalSent.textContent = this.state.totalSent;
+                this.elements.totalImages.textContent = this.state.totalImages;
+
+                this.addLog(`✅ تم إرسال ${sent} رسالة مع ${images} صورة`, 'success');
+
+                this.completeSending();
+
+                // لا تصفير تلقائي — التصفير يدوي فقط من زر «تصفير كامل»
+                this.addLog('📌 اكتمل الإرسال — البيانات محفوظة، اضغط «تصفير كامل» لمسحها', 'info');
+                this.showToast('✅ اكتمل الإرسال — البيانات محفوظة', 'success');
+
+                this.saveData();
+            }
+
+            waitForConfirmation() {
+                return new Promise((resolve) => {
+                    this.state.resolveWait = resolve;
+                });
+            }
+
+            updateProgress(data) {
+                this.state.currentProgress = data;
+                const { total, current, sent, images } = data;
+                const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+
+                this.elements.progressFill.style.width = percentage + '%';
+                this.elements.progressText.textContent = `${percentage}% (${current}/${total})`;
+                this.elements.sentCount.textContent = sent;
+                this.elements.imageCount.textContent = images;
+                this.elements.remainingCount.textContent = total - current;
+            }
+
+            async stopSending() {
+                if (!this.state.isSending) return;
+                const ok = await this.showConfirm(
+                    '⏹️ إيقاف الإرسال',
+                    'هل تريد إيقاف الإرسال الآن؟',
+                    '⏹️ إيقاف',
+                    '❌ متابعة'
+                );
+                if (!ok) return;
+                this.state.isStopped = true;
+                this.elements.popupHelper.classList.remove('active');
+                if (this.state.resolveWait) {
+                    this.state.resolveWait(false);
+                    this.state.resolveWait = null;
+                }
+                this.addLog('⏹️ تم طلب إيقاف الإرسال', 'info');
+                this.completeSending();
+            }
+
+            completeSending() {
+                this.state.isSending = false;
+                this.state.startTime = null;
+                this.elements.sendBtn.disabled = false;
+                this.elements.sendBtn.classList.remove('loading');
+                this.elements.sendBtn.innerHTML = '📸 بدء الإرسال مع الصور';
+                this.elements.stopBtn.classList.add('hidden');
+                this.elements.popupHelper.classList.remove('active');
+                if (this.state.resolveWait) {
+                    this.state.resolveWait(false);
+                    this.state.resolveWait = null;
+                }
+            }
+
+            async fullReset() {
+                if (this.state.isResetting) return;
+                this.state.isResetting = true;
+
+                this.elements.resetOverlay.classList.add('active');
+                this.elements.connectionStatus.textContent = '🔄 جاري التصفير الكامل';
+                this.elements.connectionStatus.className = 'status-badge resetting';
+
+                this.elements.mainCard.classList.add('resetting');
+                this.elements.statsCard.classList.add('resetting');
+                this.elements.logContainer.style.opacity = '0.3';
+
+                const steps = [
+                    { progress: 10, status: 'جاري مسح الأرقام...' },
+                    { progress: 25, status: 'جاري مسح الرسالة...' },
+                    { progress: 40, status: 'جاري مسح الصورة...' },
+                    { progress: 55, status: 'جاري مسح الإحصائيات...' },
+                    { progress: 70, status: 'جاري مسح الإعدادات...' },
+                    { progress: 85, status: 'جاري تهيئة التطبيق...' },
+                    { progress: 100, status: 'تم التصفير بنجاح!' }
+                ];
+
+                for (const step of steps) {
+                    this.elements.resetProgressText.textContent = `${step.progress}%`;
+                    this.elements.resetStatusText.textContent = step.status;
+                    this.addLog(`🔄 ${step.status}`, 'reset');
+                    await new Promise(resolve => setTimeout(resolve, 400));
+                }
+
+                // تصفير كل شيء
+                this.state.numbers = [];
+                this.state.imageFile = null;
+                this.state.imageData = null;
+                this.state.imageName = '';
+                this.state.imageSize = 0;
+                this.state.totalSent = 0;
+                this.state.totalImages = 0;
+
+                this.elements.numbersPreview.innerHTML = '';
+                this.elements.numbersCount.textContent = '0';
+                this.elements.recipientsCount.textContent = '0';
+                this.elements.recipientCount.textContent = '0';
+                this.elements.filePreview.classList.add('hidden');
+                this.elements.fileName.textContent = 'اختر ملف الأرقام';
+
+                this.elements.message.value = '';
+                this.elements.charCount.textContent = '0';
+
+                this.elements.imagePreview.src = '';
+                this.elements.imagePreviewContainer.classList.remove('active');
+                this.elements.imageUploadArea.classList.remove('has-image');
+                this.elements.imageName.textContent = 'اختر صورة JPG أو PNG';
+                this.elements.imageFile.value = '';
+                this.elements.imageFileName.textContent = 'اسم الملف';
+                this.elements.imageFileSize.textContent = 'الحجم: 0 KB';
+
+                this.elements.totalSent.textContent = '0';
+                this.elements.totalImages.textContent = '0';
+                this.elements.sentCount.textContent = '0';
+                this.elements.imageCount.textContent = '0';
+                this.elements.remainingCount.textContent = '0';
+
+                this.elements.progressFill.style.width = '0%';
+                this.elements.progressText.textContent = '0%';
+                this.elements.progressContainer.classList.remove('active');
+                this.elements.elapsedTime.textContent = '0s';
+
+                this.elements.logContent.innerHTML = '';
+                this.addLog('🔄 تم تصفير التطبيق بالكامل!', 'reset');
+
+                this.elements.delaySlider.value = '5';
+                this.elements.delayDisplay.textContent = '5';
+                this.elements.waitMode.value = 'auto';
+                this.elements.countryCode.value = '967';
+
+                try {
+                    localStorage.removeItem('whatsappRealImage_data');
+                    this.addLog('🗑️ تم مسح التخزين المحلي', 'reset');
+                } catch (e) {}
+
+                this.elements.sendBtn.disabled = true;
+
+                setTimeout(() => {
+                    this.elements.resetOverlay.classList.remove('active');
+                    this.elements.mainCard.classList.remove('resetting');
+                    this.elements.statsCard.classList.remove('resetting');
+                    this.elements.logContainer.style.opacity = '1';
+                    this.elements.connectionStatus.textContent = '✅ تم التصفير';
+                    this.elements.connectionStatus.className = 'status-badge connected';
+                    this.state.isResetting = false;
+                    
+                    this.addLog('✅ تم تصفير التطبيق بالكامل!', 'reset');
+                    this.showToast('✅ تم تصفير التطبيق وإعادة تعيينه', 'reset');
+                    
+                    this.updateStats();
+                    this.saveData();
+                    
+                    this.addLog('🔄 جاري إعادة تحميل الصفحة...', 'reset');
+                    setTimeout(() => {
+                        window.location.reload(true);
+                    }, 1500);
+                    
+                }, 1000);
+            }
+
+            addLog(message, type = 'info') {
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                const timestamp = new Date().toLocaleTimeString('ar-SA');
+                entry.textContent = `[${timestamp}] ${message}`;
+                this.elements.logContent.appendChild(entry);
+                this.elements.logContent.scrollTop = this.elements.logContent.scrollHeight;
+            }
+
+            showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                this.elements.toastContainer.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transition = 'opacity 0.3s';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.app = new WhatsAppRealImageApp();
+        });
+    </script>
+</body>
+</html>
