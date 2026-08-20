@@ -1257,7 +1257,7 @@
         <footer class="app-footer">
             <p>📤 فتح محادثات واتساب جاهزة + أرقام متعددة + مشاركة صور حقيقية</p>
             <p>⚠️ استخدم بحذر - سيتم فتح محادثة لكل رقم</p>
-            <p style="font-size: 9px; opacity: 0.5;">الإصدار 15.0 - تصفير يدوي + مشاركة صور حقيقية</p>
+            <p style="font-size: 9px; opacity: 0.5;">الإصدار 15.2 - منع تكرار الأرقام + إصلاح زر المشاركة</p>
         </footer>
     </div>
 
@@ -1604,11 +1604,16 @@
                         return;
                     }
 
-                    this.state.numbers = lines;
-                    this.displayNumbers(lines);
+                    // منع التكرار مع الأرقام الموجودة
+                    const existing = new Set(this.state.numbers);
+                    const fresh = lines.filter(n => !existing.has(n));
+                    const dupes = lines.length - fresh.length;
+
+                    this.state.numbers = fresh.length ? fresh : this.state.numbers;
+                    if (fresh.length) this.displayNumbers(fresh);
                     this.saveData();
-                    this.addLog(`📊 تم تحميل ${lines.length} رقم (بالصيغة الدولية)`, 'success');
-                    this.showToast(`✅ تم تحميل ${lines.length} رقم`, 'success');
+                    this.addLog(`📊 تم تحميل ${fresh.length} رقم${dupes > 0 ? ` (تجاهل ${dupes} مكرر)` : ''}`, 'success');
+                    this.showToast(`✅ تم تحميل ${fresh.length} رقم${dupes > 0 ? ` (تجاهل ${dupes} مكرر)` : ''}`, 'success');
                 };
                 reader.readAsText(file);
             }
@@ -1630,12 +1635,22 @@
                     return;
                 }
 
-                this.state.numbers = [...this.state.numbers, ...lines];
+                // منع التكرار: نضيف فقط الأرقام غير الموجودة مسبقاً
+                const existing = new Set(this.state.numbers);
+                const fresh = lines.filter(n => !existing.has(n));
+                const dupes = lines.length - fresh.length;
+
+                if (fresh.length === 0) {
+                    this.showToast(dupes > 0 ? `⚠️ الأرقام موجودة مسبقاً (${dupes} مكرر)` : '⚠️ لا أرقام جديدة', 'warning');
+                    return;
+                }
+
+                this.state.numbers = [...this.state.numbers, ...fresh];
                 this.displayNumbers(this.state.numbers);
                 this.elements.manualNumbers.value = '';
                 this.saveData();
-                this.addLog(`📊 تم إضافة ${lines.length} رقم يدوياً (بالصيغة الدولية)`, 'success');
-                this.showToast(`✅ تم إضافة ${lines.length} رقم`, 'success');
+                this.addLog(`📊 تم إضافة ${fresh.length} رقم يدوياً${dupes > 0 ? ` (تم تجاهل ${dupes} مكرر)` : ''}`, 'success');
+                this.showToast(`✅ تم إضافة ${fresh.length} رقم${dupes > 0 ? ` (تجاهل ${dupes} مكرر)` : ''}`, 'success');
             }
 
             async clearNumbers() {
@@ -1751,11 +1766,27 @@
                     return;
                 }
                 const message = this.elements.message.value;
+
+                // تشخيص السبب قبل المحاولة
+                if (!window.isSecureContext) {
+                    this.showToast('⚠️ المشاركة تعمل فقط عبر رابط https — افتح الموقع برابط آمن', 'warning');
+                    return;
+                }
+                if (typeof navigator.share !== 'function') {
+                    this.showToast('⚠️ متصفحك لا يدعم المشاركة — أرفق الصورة يدوياً في واتساب', 'warning');
+                    return;
+                }
                 try {
-                    if (typeof navigator.share !== 'function' || !navigator.canShare({ files: [file] })) {
-                        this.showToast('⚠️ المشاركة غير مدعومة في هذا المتصفح — أرفق الصورة يدوياً', 'warning');
+                    if (!navigator.canShare({ files: [file] })) {
+                        this.showToast('⚠️ متصفحك لا يدعم مشاركة الصور — أرفقها يدوياً في واتساب', 'warning');
                         return;
                     }
+                } catch (e) {
+                    this.showToast('⚠️ متصفحك لا يدعم مشاركة الصور — أرفقها يدوياً في واتساب', 'warning');
+                    return;
+                }
+
+                try {
                     await navigator.share({
                         title: 'واتساب بلس',
                         text: message,
@@ -1767,6 +1798,7 @@
                     // إلغاء المشاركة ليس خطأ
                     if (err.name !== 'AbortError') {
                         this.addLog(`❌ فشلت المشاركة: ${err.message}`, 'error');
+                        this.showToast('❌ تعذرت المشاركة — أرفق الصورة يدوياً', 'error');
                     }
                 }
             }
@@ -1894,9 +1926,25 @@
                     const url = `https://wa.me/${number}?text=${encodeURIComponent(rawMessage)}`;
 
                     // دعم مشاركة الصورة الحقيقية عبر نظام المشاركة (Android/iOS)
+                    // يتطلب: رابط https أو localhost (ليس file://) + متصفح يدعم الملفات
                     const imgFile = this.getImageFile();
-                    const canShare = hasImage && imgFile && typeof navigator.canShare === 'function'
-                        && navigator.canShare({ files: [imgFile] });
+                    let canShare = false;
+                    let shareUnsupportedReason = '';
+                    if (hasImage && imgFile) {
+                        if (!window.isSecureContext) {
+                            shareUnsupportedReason = 'المشاركة تتطلب رابط https (ملف محلي لا يدعمها)';
+                        } else if (typeof navigator.canShare !== 'function' || typeof navigator.share !== 'function') {
+                            shareUnsupportedReason = 'المتصفح لا يدعم المشاركة';
+                        } else {
+                            try {
+                                canShare = navigator.canShare({ files: [imgFile] }) === true;
+                                if (!canShare) shareUnsupportedReason = 'المتصفح لا يدعم مشاركة الصور';
+                            } catch (e) {
+                                canShare = false;
+                                shareUnsupportedReason = 'المتصفح لا يدعم مشاركة الصور (' + e.name + ')';
+                            }
+                        }
+                    }
 
                     let win = null;
                     let popupBlocked = false;
@@ -1936,6 +1984,12 @@
                                 ${linkBtn}
                                 <p style="font-size:11px;color:var(--gray-400);margin-top:6px;">أو أرسل النص فقط بدون صورة</p>
                             ` : `
+                                ${hasImage && shareUnsupportedReason ? `
+                                    <div style="background:#fff5f5;border:1px solid #fc8181;border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:12px;color:#e53e3e;">
+                                        ⚠️ <strong>زر مشاركة الصورة لا يعمل هنا:</strong> ${shareUnsupportedReason}.
+                                        <br>ارفع الموقع على رابط <strong>https</strong> (مثل GitHub Pages) ليشتغل تلقائياً.
+                                    </div>
+                                ` : ''}
                                 ${popupBlocked
                                     ? `<p style="color:#f6ad55;font-size:13px;margin-bottom:4px;">المتصفح منع الفتح التلقائي — اضغط الزر الأخضر:</p>`
                                     : `<p style="color:var(--success);font-size:13px;margin-bottom:4px;">إذا لم تُفتح المحادثة تلقائياً اضغط الزر الأخضر:</p>`}
