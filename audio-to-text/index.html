@@ -69,6 +69,8 @@
     .btn-main{ background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; }
     .btn-stop{ background:#fff; color:var(--danger); border:1.5px solid var(--danger); margin-top:8px; display:none; }
     .btn-stop.show{ display:block; }
+    .btn-retry{ background:#fff; color:var(--primary-dark); border:1.5px solid var(--primary); margin-top:8px; display:none; }
+    .btn-retry.show{ display:block; }
     .row{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin-top:9px; }
     .btn-s{
         border:1.5px solid var(--primary); background:#fff; color:var(--primary-dark);
@@ -112,7 +114,7 @@
         <h1>🎙️ صوت إلى نص</h1>
         <p>ارفع ملف صوت — واحصل على نصه مكتوبًا</p>
         <div class="badges">
-            <span class="badge">⚡ الإصدار ٢ — بدء سريع</span>
+            <span class="badge">🔁 الإصدار ٣ — استئناف تلقائي للتنزيل</span>
             <span class="badge">🆓 مجاني بالكامل</span>
             <span class="badge">🔒 يعمل على جهازك — ملفك لا يغادر جوالك</span>
             <span class="badge">🌍 عربي + لغات كثيرة</span>
@@ -125,13 +127,14 @@
         <div class="drop" id="dropZone">
             <div class="icon">🎵</div>
             <strong>اضغط هنا لاختيار ملف صوت</strong>
-            <span>أو اسحب الملف وأفلته هنا — MP3, WAV, M4A, OGG, OPUS, FLAC, AAC</span>
+            <span>أو اسحب الملف وأفلته هنا — MP3, WAV, M4A, OGG, OPUS, FLAC, AAC<br>⏱️ المدة المقبولة: من دقيقة واحدة إلى ساعة واحدة</span>
         </div>
         <input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.opus,.flac,.webm,.aiff,.wma" hidden>
         <div class="fileinfo" id="fileInfo"></div>
         <div class="modelstatus" id="modelStatus">🧠 جارٍ تجهيز نموذج التحويل في الخلفية فور اختيارك الملف…</div>
         <div class="warn soft" id="warnSoft">⏳ هذا ملف طويل/كبير: سيُحوَّل على أجزاء جزءًا بعد جزء، والنص يظهر أولًا بأول. اترك الشاشة مفتوحة ولا تُغلق الصفحة أثناء العمل.</div>
         <div class="warn hard" id="warnHard">⚠️ هذا الملف ضخم جدًا على ذاكرة الجوال وقد يتوقف. إن فشل: جرّبه من كمبيوتر، أو قصّ الصوت إلى أجزاء أصغر وحوّل كل جزء وحده.</div>
+        <div class="warn hard" id="durWarn"></div>
         <audio id="player" controls preload="metadata"></audio>
     </div>
 
@@ -167,7 +170,7 @@
             <option value="Xenova/whisper-base">⚖️ متوازن — دقة أفضل، تنزيله الأول أكبر بعدة أضعاف</option>
             <option value="Xenova/whisper-small">🎯 دقيق — أفضل نتيجة للعربية، الأبطأ بدءًا (يُفضل كمبيوتر/واي فاي)</option>
         </select>
-        <p class="hint">💡 يبدأ تجهيز النموذج في الخلفية <strong>فور اختيار الملف</strong> — فعند ضغطك «ابدأ» يكون جاهزًا أو شارف على الجهوز.</p>
+        <p class="hint">💡 يبدأ تجهيز النموذج في الخلفية <strong>فور اختيار ملف صالح</strong> — ولو انقطع الإنترنت أثناء تنزيله <strong>سيُستأنف تلقائيًا من حيث توقف</strong> دون أن تعيد من الصفر.</p>
 
         <label class="chk">
             <input type="checkbox" id="tsChk">
@@ -180,6 +183,7 @@
         <h2>٣️⃣ التحويل إلى نص</h2>
         <button class="btn btn-main" id="startBtn" disabled>🚀 ابدأ تحويل الصوت إلى نص</button>
         <button class="btn btn-stop" id="cancelBtn">⏹️ إيقاف التحويل</button>
+        <button class="btn btn-retry" id="retryBtn">🔁 استئناف تنزيل النموذج (يكمل من حيث توقف)</button>
         <div class="progwrap" id="progWrap">
             <div class="barbg"><div class="bar" id="progBar"></div></div>
             <div class="progtext" id="progText">جاهز</div>
@@ -203,16 +207,16 @@
     <div class="card">
         <h2>❓ كيف يعمل؟ ولماذا صار أسرع؟</h2>
         <ol class="howto">
-            <li>ارفع ملف الصوت — فيبدأ تنزيل «عقل» التحويل (نموذج Whisper) <strong>في الخلفية فورًا</strong> وأنت تضبط الإعدادات. أول مرة تحتاج واي فاي، وبعدها يُحفظ على جهازك ولا يُنزّل مجددًا.</li>
-            <li>اضغط <strong>🚀 ابدأ التحويل</strong> — قراءة الصوت وتجهيز النموذج يجريان معًا بالتوازي لا أحدهما بعد الآخر.</li>
-            <li>يُنسخ الصوت على مقاطع قصيرة (٣٠ ثانية) فيظهر أول نص <strong>خلال ثوانٍ من بدء النسخ</strong>، لا بعد دقائق.</li>
+            <li>ارفع ملف صوت مدته <strong>من دقيقة إلى ساعة</strong> — يُفحص طوله أولًا، ثم يبدأ تنزيل «عقل» التحويل (نموذج Whisper) <strong>في الخلفية فورًا</strong> وأنت تضبط الإعدادات.</li>
+            <li>لو انقطع الإنترنت أثناء التنزيل: <strong>لا تفعل شيئًا</strong> — سيُستأنف تلقائيًا عدة مرات، والملفات التي اكتملت محفوظة على جهازك ولا تُنزّل ثانية. أبقِ الصفحة مفتوحة (التطبيق يمنع نوم الشاشة أثناء العمل).</li>
+            <li>اضغط <strong>🚀 ابدأ التحويل</strong> — قراءة الصوت وتجهيز النموذج يجريان معًا بالتوازي، ويُنسخ الصوت على مقاطع ٣٠ ثانية فيظهر النص أولًا بأول.</li>
             <li>انسخ النص أو نزّله TXT — أو SRT إن فعّلت خيار الوقت.</li>
         </ol>
         <p class="hint">🔒 الخصوصية: معالجة الصوت تتم 100% داخل متصفح جهازك — لا يُرفع ملفك إلى أي خادم.</p>
     </div>
 
     <div class="footer">
-        تطبيق «صوت إلى نص» — الإصدار ٢ (بدء سريع) — مستقل تمامًا عن تطبيق واتساب بلس<br>
+        تطبيق «صوت إلى نص» — الإصدار ٣ (استئناف تلقائي للتنزيل + حد المدة: دقيقة–ساعة) — مستقل تمامًا عن تطبيق واتساب بلس<br>
         يعمل بنموذج OpenAI Whisper داخل المتصفح (Transformers.js)
     </div>
 </div>
@@ -232,10 +236,13 @@ try {
 
 let transcriber = null;
 let currentModel = null;
+let desiredModel = null;
+let lastFile = '';
 const filesProgress = {};
 
 function reportProgress(x) {
     if (x && x.file) {
+        lastFile = x.file.split('/').pop();
         if (x.status === 'progress' && x.total) {
             filesProgress[x.file] = { loaded: x.loaded || 0, total: x.total };
         } else if (x.status === 'done' && filesProgress[x.file]) {
@@ -245,26 +252,40 @@ function reportProgress(x) {
     let loaded = 0, total = 0;
     for (const f in filesProgress) { loaded += filesProgress[f].loaded || 0; total += filesProgress[f].total || 0; }
     const percent = total > 0 ? Math.round((loaded / total) * 100) : null;
-    self.postMessage({ type: 'model-progress', percent: percent, loaded: loaded, total: total });
+    self.postMessage({ type: 'model-progress', percent: percent, loaded: loaded, total: total, file: lastFile });
 }
+
+const MAX_LOAD_ATTEMPTS = 8;
 
 async function loadModel(model) {
     if (transcriber && currentModel === model) return;
-    transcriber = null;
-    for (const k in filesProgress) delete filesProgress[k];
-    // وضع WASM بوزن مخفّض q8 دائمًا: أصغر تنزيلًا (بدء أسرع على نت بطيء)
-    // ولا مخاطرة بتعليق WebGPU على بعض أجهزة أندرويد كما في الإصدار ١.
-    try {
-        transcriber = await pipeline('automatic-speech-recognition', model, {
-            device: 'wasm', dtype: 'q8', progress_callback: reportProgress
-        });
-    } catch (e) {
-        // خطة بديلة: بلا تخفيض وزن إن لم تتوفر نسخة q8 لهذا النموذج
-        transcriber = await pipeline('automatic-speech-recognition', model, {
-            device: 'wasm', progress_callback: reportProgress
-        });
+    // صفر عداد التقدم عند تبديل النموذج فقط — أما إعادة المحاولة لنفس النموذج
+    // فتبقي الأرقام، والملفات المكتملة تأتي من كاش المتصفح فورًا فلا يبدأ من الصفر.
+    if (desiredModel !== model) {
+        desiredModel = model;
+        for (const k in filesProgress) delete filesProgress[k];
     }
-    currentModel = model;
+    // وضع WASM بوزن مخفّض q8 دائمًا: أصغر تنزيلًا ولا مخاطرة بتعليق WebGPU.
+    // مهم: عند فشل التنزيل (شبكة) نعيد المحاولة بنفس الإعداد الخفيف بدل أي بديل أثقل.
+    let lastErr = null;
+    for (let attempt = 1; attempt <= MAX_LOAD_ATTEMPTS; attempt++) {
+        try {
+            if (attempt > 1) self.postMessage({ type: 'model-attempt', attempt: attempt, max: MAX_LOAD_ATTEMPTS });
+            transcriber = await pipeline('automatic-speech-recognition', model, {
+                device: 'wasm', dtype: 'q8', progress_callback: reportProgress
+            });
+            currentModel = model;
+            return;
+        } catch (e) {
+            lastErr = e; transcriber = null; currentModel = null;
+            if (attempt < MAX_LOAD_ATTEMPTS) {
+                const waitMs = Math.min(15000, 2000 * Math.pow(2, attempt - 1)); // 2s,4s,8s,15s...
+                self.postMessage({ type: 'model-retry', attempt: attempt, max: MAX_LOAD_ATTEMPTS, waitMs: waitMs, message: (e && e.message) ? e.message : String(e) });
+                await new Promise(function (r) { setTimeout(r, waitMs); });
+            }
+        }
+    }
+    throw lastErr || new Error('تعذّر تحميل نموذج التحويل');
 }
 
 self.onmessage = async function (e) {
@@ -303,13 +324,17 @@ self.onmessage = async function (e) {
     const $ = function (s) { return document.querySelector(s); };
     const dropZone = $('#dropZone'), fileInput = $('#fileInput'), fileInfo = $('#fileInfo');
     const warnSoft = $('#warnSoft'), warnHard = $('#warnHard'), player = $('#player'), modelStatus = $('#modelStatus');
+    const durWarn = $('#durWarn');
     const langSel = $('#langSel'), modelSel = $('#modelSel'), tsChk = $('#tsChk');
     const startBtn = $('#startBtn'), cancelBtn = $('#cancelBtn');
+    const retryBtn = $('#retryBtn');
     const progWrap = $('#progWrap'), progBar = $('#progBar'), progText = $('#progText');
     const logList = $('#logList'), resultArea = $('#resultArea'), statsText = $('#statsText');
     const copyBtn = $('#copyBtn'), txtBtn = $('#txtBtn'), srtBtn = $('#srtBtn');
 
     const SEG_SECONDS = 30; // مقاطع قصيرة: أول نص يظهر بسرعة
+    const MIN_SECONDS = 60;   // الحد الأدنى لمدة الصوت: دقيقة
+    const MAX_SECONDS = 3600; // الحد الأقصى لمدة الصوت: ساعة
     const LS_KEY = 'a2t_v2_settings'; // مفتاح جديد: لا يرث اختيار الإصدار ١ البطيء
 
     let currentFile = null;
@@ -324,6 +349,9 @@ self.onmessage = async function (e) {
     let srtEntries = [];
     let audioDurationSec = 0;
     let objectUrl = null;
+    let durationState = 'none'; // none|unknown|ok|short|long
+    let metaTimer = null;
+    let wakeLock = null;
 
     /* ---------- أدوات ---------- */
     function fmtBytes(b) {
@@ -365,6 +393,63 @@ self.onmessage = async function (e) {
         copyBtn.disabled = !hasText; txtBtn.disabled = !hasText;
         srtBtn.disabled = !(hasText && srtEntries.length);
     }
+function validateDuration(sec) {
+        if (!isFinite(sec) || !sec || sec <= 0) return 'unknown';
+        if (sec < MIN_SECONDS - 0.5) return 'short'; // سماحية نصف ثانية لتقريب بيانات الملف
+        if (sec > MAX_SECONDS + 0.5) return 'long';
+        return 'ok';
+    }
+    function durationErrorText(sec, state) {
+        if (state === 'short') return '⛔ مدة هذا الصوت ' + fmtClock(sec) + ' — أقل من الحد الأدنى (دقيقة واحدة). اختر ملفًا مدته دقيقة على الأقل.';
+        if (state === 'long') return '⛔ مدة هذا الصوت ' + fmtClock(sec) + ' — أكبر من الحد الأقصى (ساعة واحدة). قصّ الملف إلى ساعة أو أقل ثم أعد المحاولة.';
+        return '';
+    }
+    function applyDurationVerdict(sec) {
+        const st = validateDuration(sec);
+        durationState = st;
+        if (st === 'short' || st === 'long') {
+            const msg = durationErrorText(sec, st);
+            durWarn.textContent = msg;
+            durWarn.classList.add('show');
+            startBtn.disabled = true;
+            modelStatus.classList.add('show');
+            modelStatus.textContent = '⛔ لن يبدأ تنزيل النموذج — مدة الملف خارج الحد المقبول (دقيقة – ساعة)';
+            logMsg(msg, 'err');
+            return st;
+        }
+        durWarn.classList.remove('show');
+        if (st === 'ok') {
+            startBtn.disabled = busy;
+            modelStatus.classList.add('show');
+            preloadModel(modelSel.value); // لا يبدأ أي تنزيل إلا لملف مدته صالحة
+        }
+        return st;
+    }
+    async function acquireWakeLock() {
+        try {
+            if ('wakeLock' in navigator && !wakeLock) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                wakeLock.addEventListener('release', function () { wakeLock = null; });
+            }
+        } catch (e) { wakeLock = null; }
+    }
+    function releaseWakeLock() {
+        try { if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch (e) {}
+    }
+    async function checkStorageOnce() {
+        try {
+            if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+            if (navigator.storage && navigator.storage.estimate) {
+                const est = await navigator.storage.estimate();
+                if (est && est.quota) {
+                    const free = est.quota - (est.usage || 0);
+                    if (free < 150 * 1024 * 1024) {
+                        logMsg('⚠️ مساحة تخزين المتصفح المتبقية قليلة (' + fmtBytes(free) + ') — قد يفشل حفظ النموذج. حرّر مساحة على جهازك ثم أعد المحاولة.', 'warn');
+                    }
+                }
+            }
+        } catch (e) {}
+    }
     function saveSettings() {
         try { localStorage.setItem(LS_KEY, JSON.stringify({ lang: langSel.value, model: modelSel.value, ts: tsChk.checked })); } catch (e) {}
     }
@@ -386,26 +471,56 @@ self.onmessage = async function (e) {
             logMsg('⚠️ هذا ليس ملف صوت معروفًا — قد يفشل فكّه. الأفضل MP3 أو WAV أو M4A.', 'warn');
         }
         currentFile = file;
+        durationState = 'none';
+        audioDurationSec = 0;
+        if (metaTimer) { clearTimeout(metaTimer); metaTimer = null; }
+        durWarn.classList.remove('show');
+        retryBtn.classList.remove('show');
         if (objectUrl) URL.revokeObjectURL(objectUrl);
         objectUrl = URL.createObjectURL(file);
         player.src = objectUrl; player.classList.add('show');
         fileInfo.classList.add('show');
-        fileInfo.innerHTML = '📄 <strong></strong><br>💾 الحجم: ' + fmtBytes(file.size) + ' &nbsp;•&nbsp; ⏱️ المدة: <span id="durSpan">…</span>';
+        fileInfo.innerHTML = '📄 <strong></strong><br>💾 الحجم: ' + fmtBytes(file.size) + ' &nbsp;•&nbsp; ⏱️ المدة: <span id="durSpan">…</span> &nbsp;•&nbsp; المقبول: ٠٠:٠١:٠٠ – ٠١:٠٠:٠٠';
         fileInfo.querySelector('strong').textContent = file.name;
         warnSoft.classList.toggle('show', file.size > 30 * 1024 * 1024);
         warnHard.classList.toggle('show', file.size > 250 * 1024 * 1024);
-        player.onloadedmetadata = function () {
-            audioDurationSec = isFinite(player.duration) ? player.duration : 0;
-            const el = document.getElementById('durSpan');
-            if (el) el.textContent = audioDurationSec ? fmtClock(audioDurationSec) : 'غير معروفة';
-            if (audioDurationSec > 30 * 60) warnSoft.classList.add('show');
-            updateStats();
-        };
-        startBtn.disabled = busy;
-        logMsg('🎵 تم اختيار الملف: ' + file.name + ' (' + fmtBytes(file.size) + ')', 'ok');
-        // ⚡ لا تنتظر زر البدء: جهّز النموذج الآن في الخلفية
+        startBtn.disabled = true; // يبقى مقفلًا حتى تتأكد مدة الملف
         modelStatus.classList.add('show');
-        preloadModel(modelSel.value);
+        modelStatus.textContent = '⏱️ فحص مدة الصوت أولًا (المقبول: من دقيقة إلى ساعة)…';
+        logMsg('🎵 تم اختيار الملف: ' + file.name + ' (' + fmtBytes(file.size) + ') — فحص المدة…', 'ok');
+        let verdictDone = false;
+        function onMeta() {
+            if (verdictDone) return;
+            const d = player.duration;
+            const el = document.getElementById('durSpan');
+            if (isFinite(d) && d > 0) {
+                verdictDone = true;
+                if (metaTimer) { clearTimeout(metaTimer); metaTimer = null; }
+                audioDurationSec = d;
+                if (el) el.textContent = fmtClock(d);
+                if (d > 30 * 60) warnSoft.classList.add('show');
+                updateStats();
+                if (applyDurationVerdict(d) === 'ok') {
+                    logMsg('✅ المدة ' + fmtClock(d) + ' ضمن الحد المقبول (دقيقة – ساعة) — تجهيز النموذج في الخلفية الآن', 'ok');
+                }
+            } else if (el) {
+                el.textContent = 'غير معروفة بعد…';
+            }
+        }
+        player.onloadedmetadata = onMeta;
+        player.ondurationchange = onMeta;
+        // بعض الصيغ لا تعطي المدة من بياناتها: مهلة قصيرة ثم اعتماد فحص دقيق بعد فك الصوت عند البدء
+        metaTimer = setTimeout(function () {
+            if (verdictDone) return;
+            verdictDone = true;
+            durationState = 'unknown';
+            const el = document.getElementById('durSpan');
+            if (el) el.textContent = 'غير معروفة — ستُفحص بدقة عند البدء';
+            modelStatus.textContent = '🧠 جارٍ تجهيز النموذج في الخلفية — ومدة هذا الملف ستُفحص بدقة عند ضغط «ابدأ»';
+            logMsg('⚠️ لم تُعرف مدة الملف من بياناته — ستُفحص بعد فكّ الصوت عند بدء التحويل، وتجهيز النموذج بدأ الآن', 'warn');
+            startBtn.disabled = busy;
+            preloadModel(modelSel.value);
+        }, 3500);
     }
 
     dropZone.addEventListener('click', function () { fileInput.click(); });
@@ -445,7 +560,7 @@ self.onmessage = async function (e) {
         }
         let data;
         if (buffer.numberOfChannels === 1) {
-            data = new Float32Array(buffer.getChannelData(0));
+            data = buffer.getChannelData(0); // بلا نسخ إضافي — توفير ذاكرة لأصوات طويلة حتى ساعة
         } else {
             const l = buffer.getChannelData(0), r = buffer.getChannelData(1);
             data = new Float32Array(l.length);
@@ -464,11 +579,18 @@ self.onmessage = async function (e) {
             const d = e.data || {};
             if (d.type === 'model-progress') {
                 if (d.percent !== null && d.percent !== undefined && d.total) {
-                    setProgress(d.percent, '⬇️ تنزيل نموذج التحويل… ' + d.percent + '% (' + fmtBytes(d.loaded) + ' من ' + fmtBytes(d.total) + ') — مرة واحدة فقط');
+                    setProgress(d.percent, '⬇️ تنزيل نموذج التحويل… ' + d.percent + '% (' + fmtBytes(d.loaded) + ' من ' + fmtBytes(d.total) + ')' + (d.file ? ' • ' + d.file : '') + ' — مرة واحدة فقط، ويُستأنف تلقائيًا لو انقطع');
                 } else {
                     setProgress(null, '⬇️ تنزيل/تجهيز نموذج التحويل…', true);
                 }
+            } else if (d.type === 'model-retry') {
+                const waitSec = Math.max(1, Math.round((d.waitMs || 0) / 1000));
+                setProgress(null, '⚠️ انقطع التنزيل — استئناف تلقائي بعد ' + waitSec + ' ثوانٍ (المحاولة ' + (d.attempt + 1) + ' من ' + d.max + ')… ما اكتمل محفوظ ولن يُعاد');
+                logMsg('⚠️ انقطع تنزيل النموذج (' + (d.message || 'خطأ شبكة') + ') — سيُستأنف تلقائيًا بعد ' + waitSec + ' ثوانٍ من حيث توقف', 'warn');
+            } else if (d.type === 'model-attempt') {
+                logMsg('🔁 استئناف تنزيل النموذج — المحاولة ' + d.attempt + ' من ' + d.max + ' (الملفات المكتملة تُجلب من ذاكرة جهازك فورًا)', 'warn');
             } else if (d.type === 'model-ready') {
+                retryBtn.classList.remove('show');
                 modelReadyFor = d.model || (preloadInfo && preloadInfo.model) || modelReadyFor;
                 modelStatus.textContent = '✅ نموذج التحويل جاهز — البدء سيكون فوريًا';
                 if (loadResolve) { loadResolve(); loadResolve = null; loadReject = null; }
@@ -508,15 +630,22 @@ self.onmessage = async function (e) {
     function preloadModel(model) {
         if (modelReadyFor === model && worker) return Promise.resolve();
         if (preloadInfo && preloadInfo.model === model) return preloadInfo.promise;
-        logMsg('🧠 تجهيز نموذج التحويل في الخلفية… اضبط إعداداتك على راحتك');
+        retryBtn.classList.remove('show');
+        acquireWakeLock();
+        logMsg('🧠 تجهيز نموذج التحويل في الخلفية… ولو انقطع التنزيل سيُستأنف تلقائيًا من حيث توقف');
         const promise = loadModelAsync(model).then(function () {
-            if (!busy) setProgress(100, '✅ نموذج التحويل جاهز — اضغط «ابدأ» متى شئت');
+            if (!busy) {
+                setProgress(100, '✅ نموذج التحويل جاهز — اضغط «ابدأ» متى شئت');
+                releaseWakeLock();
+            }
             logMsg('✅ نموذج التحويل جاهز', 'ok');
         }).catch(function (err) {
             if (preloadInfo && preloadInfo.promise === promise) preloadInfo = null;
             if (err && err.message !== 'cancelled') {
-                modelStatus.textContent = '⚠️ تعذّر تجهيز النموذج الآن — سيعاد تلقائيًا عند الضغط على «ابدأ»';
-                logMsg('⚠️ لم يكتمل تجهيز النموذج (' + (err.message || err) + ') — سيُعاد عند بدء التحويل', 'warn');
+                modelStatus.textContent = '❌ توقف تنزيل النموذج بعد عدة محاولات تلقائية — عندما تتحسن الشبكة اضغط «🔁 استئناف تنزيل النموذج» وسيكمل من حيث توقف، ما اكتمل محفوظ على جهازك';
+                retryBtn.classList.add('show');
+                logMsg('❌ توقف تجهيز النموذج بعد كل المحاولات (' + (err.message || err) + ') — لا تبدأ من الصفر: اضغط زر الاستئناف عندما تستقر الشبكة', 'err');
+                releaseWakeLock();
             }
             throw err;
         });
@@ -540,10 +669,17 @@ self.onmessage = async function (e) {
     /* ---------- بدء التحويل: فكّ الصوت وتجهيز النموذج بالتوازي ---------- */
     async function startTranscribe() {
         if (!currentFile || busy) return;
+        if (durationState === 'short' || durationState === 'long') {
+            durWarn.classList.add('show');
+            logMsg(durationErrorText(audioDurationSec, durationState), 'err');
+            return;
+        }
         saveSettings();
         busy = true; cancelled = false;
         startBtn.disabled = true;
         cancelBtn.classList.add('show');
+        retryBtn.classList.remove('show');
+        acquireWakeLock();
         resultArea.value = '';
         srtEntries = [];
         updateStats();
@@ -561,6 +697,14 @@ self.onmessage = async function (e) {
             if (cancelled) throw new Error('cancelled');
             const decoded = results[0];
             audioDurationSec = decoded.duration;
+            const decodedState = validateDuration(audioDurationSec); // فحص نهائي دقيق بمدة الصوت الحقيقية
+            if (decodedState === 'short' || decodedState === 'long') {
+                durationState = decodedState;
+                durWarn.textContent = durationErrorText(audioDurationSec, decodedState);
+                durWarn.classList.add('show');
+                throw new Error(durationErrorText(audioDurationSec, decodedState));
+            }
+            durationState = 'ok';
             const data = decoded.data;
             logMsg('✅ الصوت والنموذج جاهزان — مدة الصوت: ' + fmtClock(audioDurationSec) + ' — بدء النسخ…', 'ok');
 
@@ -622,12 +766,16 @@ self.onmessage = async function (e) {
             } else {
                 setProgress(0, '❌ حدث خطأ — راجع السجل بالأسفل');
                 logMsg('❌ فشل التحويل: ' + (err && err.message ? err.message : err), 'err');
-                logMsg('💡 تلميحات: تأكد من الإنترنت لأول تنزيل للنموذج، أعد الضغط على «ابدأ» للمحاولة مجددًا (ما نُزّل يُكمل من الكاش)، وجرّب صيغة MP3/WAV إن فشل فكّ الملف.', 'warn');
-                resetWorker();
+                logMsg('💡 ما نُزّل من النموذج محفوظ على جهازك — عندما تستقر الشبكة اضغط زر «🔁 استئناف تنزيل النموذج» أو «ابدأ» وسيكمل من حيث توقف. وجرّب صيغة MP3/WAV إن فشل فكّ الملف.', 'warn');
+                preloadInfo = null; // لا ندمّر العامل ولا ما تحقق: الاستئناف يكمل من كاش المتصفح
+                if (modelReadyFor !== modelSel.value && durationState !== 'short' && durationState !== 'long') {
+                    retryBtn.classList.add('show');
+                }
             }
         } finally {
             busy = false;
-            startBtn.disabled = !currentFile;
+            releaseWakeLock();
+            startBtn.disabled = !currentFile || durationState === 'short' || durationState === 'long';
             cancelBtn.classList.remove('show');
             updateStats();
         }
@@ -637,7 +785,26 @@ self.onmessage = async function (e) {
     cancelBtn.addEventListener('click', function () {
         cancelled = true;
         resetWorker();
-        modelStatus.textContent = '🧠 سيُجهّز النموذج مجددًا عند اختيار ملف أو بدء التحويل';
+        releaseWakeLock();
+        modelStatus.textContent = '🧠 أُوقف العمل بطلبك — ما اكتمل من النموذج يبقى محفوظًا على جهازك للمرة القادمة';
+    });
+    retryBtn.addEventListener('click', function () {
+        retryBtn.classList.remove('show');
+        modelStatus.classList.add('show');
+        modelStatus.textContent = '🔁 استئناف تنزيل النموذج — الملفات المكتملة لن تُنزّل ثانية…';
+        preloadModel(modelSel.value);
+    });
+    window.addEventListener('offline', function () {
+        logMsg('📴 انقطع الإنترنت — لا تغلق الصفحة، وسيُستأنف التنزيل عند عودته دون أن تبدأ من الصفر', 'warn');
+    });
+    window.addEventListener('online', function () {
+        logMsg('🌐 عاد الإنترنت', 'ok');
+        if (!busy && currentFile && durationState !== 'short' && durationState !== 'long' && modelReadyFor !== modelSel.value) {
+            preloadModel(modelSel.value);
+        }
+    });
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible' && (busy || preloadInfo)) acquireWakeLock();
     });
 
     /* ---------- نسخ وتنزيل ---------- */
@@ -677,13 +844,14 @@ self.onmessage = async function (e) {
         if (!busy) {
             resetWorker();
             modelStatus.textContent = '🧠 جارٍ تجهيز النموذج الجديد في الخلفية…';
-            if (currentFile) preloadModel(modelSel.value);
+            if (currentFile && (durationState === 'ok' || durationState === 'unknown')) preloadModel(modelSel.value);
         }
     });
     [langSel, tsChk].forEach(function (el) { el.addEventListener('change', saveSettings); });
 
     loadSettings();
-    logMsg('⚡ جاهز (الإصدار ٢ سريع البدء) — ارفع ملف صوت وسيبدأ تجهيز النموذج في الخلفية فورًا.');
+    checkStorageOnce();
+    logMsg('🔁 جاهز (الإصدار ٣) — ارفع صوتًا من دقيقة إلى ساعة؛ تنزيل النموذج يُستأنف تلقائيًا لو انقطع.');
 })();
 </script>
 </body>
