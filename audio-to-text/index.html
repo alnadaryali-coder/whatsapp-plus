@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#6d28d9">
+<title>صوت إلى نص — تحويل ملف الصوت إلى نص</title>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    :root{
+        --primary:#7c3aed; --primary-dark:#5b21b6; --accent:#06b6d4;
+        --success:#16a34a; --danger:#dc2626; --warning:#d97706;
+        --gray-100:#f3f4f6; --gray-200:#e5e7eb; --gray-400:#9ca3af; --gray-600:#4b5563; --gray-800:#1f2937;
+        --shadow:0 4px 20px rgba(0,0,0,.10); --radius:14px; --radius-sm:9px;
+        --safe-bottom:env(safe-area-inset-bottom,16px);
+    }
+    html{ font-size:15px; scroll-behavior:smooth; }
+    body{
+        font-family:-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+        background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 55%,#9333ea 100%);
+        min-height:100vh; min-height:100dvh;
+        padding:8px; padding-bottom:calc(8px + var(--safe-bottom));
+        display:flex; justify-content:center; align-items:flex-start;
+        -webkit-font-smoothing:antialiased;
+    }
+    .app{ width:100%; max-width:640px; }
+    .header{ text-align:center; color:#fff; padding:16px 8px 10px; }
+    .header h1{ font-size:1.45rem; margin-bottom:4px; }
+    .header p{ font-size:.88rem; opacity:.92; }
+    .badges{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:8px; }
+    .badge{ background:rgba(255,255,255,.18); color:#fff; font-size:.72rem; padding:3px 9px; border-radius:99px; }
+    .card{ background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:14px; margin-bottom:10px; }
+    .card h2{ font-size:1rem; margin-bottom:10px; color:var(--gray-800); }
+    .hint{ font-size:.8rem; color:var(--gray-600); line-height:1.6; }
+    .drop{
+        border:2px dashed var(--primary); border-radius:var(--radius-sm);
+        padding:22px 12px; text-align:center; cursor:pointer; background:#f5f3ff;
+        transition:background .2s;
+    }
+    .drop.over{ background:#ede9fe; }
+    .drop .icon{ font-size:2rem; }
+    .drop strong{ display:block; margin:6px 0 2px; color:var(--gray-800); }
+    .drop span{ font-size:.78rem; color:var(--gray-600); }
+    .fileinfo{ display:none; margin-top:10px; background:var(--gray-100); border-radius:var(--radius-sm); padding:9px 11px; font-size:.82rem; color:var(--gray-800); line-height:1.7; }
+    .fileinfo.show{ display:block; }
+    audio{ width:100%; margin-top:9px; display:none; }
+    audio.show{ display:block; }
+    .warn{ display:none; margin-top:9px; border-radius:var(--radius-sm); padding:9px 11px; font-size:.8rem; line-height:1.6; }
+    .warn.show{ display:block; }
+    .warn.soft{ background:#fffbeb; border:1px solid #fcd34d; color:#92400e; }
+    .warn.hard{ background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; }
+    label.f{ display:block; font-size:.83rem; font-weight:600; color:var(--gray-800); margin:10px 0 5px; }
+    label.f:first-of-type{ margin-top:0; }
+    select{
+        width:100%; padding:10px; border:1.5px solid var(--gray-200); border-radius:var(--radius-sm);
+        font-size:.9rem; background:#fff; color:var(--gray-800); font-family:inherit;
+    }
+    .chk{ display:flex; align-items:center; gap:8px; margin-top:11px; font-size:.86rem; color:var(--gray-800); }
+    .chk input{ width:18px; height:18px; accent-color:var(--primary); }
+    .btn{
+        width:100%; border:none; border-radius:var(--radius-sm); cursor:pointer;
+        padding:13px; font-size:1rem; font-weight:700; font-family:inherit; transition:opacity .2s;
+    }
+    .btn:disabled{ opacity:.45; cursor:not-allowed; }
+    .btn-main{ background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; }
+    .btn-stop{ background:#fff; color:var(--danger); border:1.5px solid var(--danger); margin-top:8px; display:none; }
+    .btn-stop.show{ display:block; }
+    .row{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin-top:9px; }
+    .btn-s{
+        border:1.5px solid var(--primary); background:#fff; color:var(--primary-dark);
+        border-radius:var(--radius-sm); padding:9px 4px; font-size:.8rem; font-weight:700; cursor:pointer; font-family:inherit;
+    }
+    .btn-s:disabled{ opacity:.4; cursor:not-allowed; }
+    .progwrap{ display:none; margin-top:12px; }
+    .progwrap.show{ display:block; }
+    .barbg{ height:12px; background:var(--gray-200); border-radius:99px; overflow:hidden; }
+    .bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--primary),var(--accent)); transition:width .3s; }
+    .bar.indet{ width:45% !important; animation:slide 1.2s infinite alternate ease-in-out; }
+    @keyframes slide{ from{ margin-right:0 } to{ margin-right:55% } }
+    .progtext{ font-size:.8rem; color:var(--gray-600); margin-top:6px; text-align:center; }
+    .log{ list-style:none; margin-top:10px; max-height:150px; overflow:auto; font-size:.78rem; line-height:1.9; color:var(--gray-600); }
+    .log li.ok{ color:var(--success); } .log li.err{ color:var(--danger); } .log li.warn{ color:var(--warning); }
+    textarea{
+        width:100%; min-height:190px; resize:vertical; padding:11px;
+        border:1.5px solid var(--gray-200); border-radius:var(--radius-sm);
+        font-size:.94rem; line-height:1.9; font-family:inherit; color:var(--gray-800);
+    }
+    .stats{ font-size:.78rem; color:var(--gray-400); margin-top:6px; text-align:center; }
+    .howto{ font-size:.82rem; line-height:2; color:var(--gray-600); padding-inline-start:18px; }
+    .footer{ text-align:center; color:#fff; font-size:.72rem; opacity:.85; padding:10px 4px 4px; line-height:1.9; }
+    @media (prefers-color-scheme: dark){
+        .card{ background:#1e1b2e; }
+        .card h2, label.f, .chk{ color:#e9e7f5; }
+        .hint,.howto,.progtext,.log{ color:#b9b4d0; }
+        select, textarea{ background:#17141f; color:#f0edfa; border-color:#3b3557; }
+        .drop{ background:#241f3d; } .drop strong{ color:#e9e7f5; }
+        .fileinfo{ background:#17141f; color:#e9e7f5; }
+        .btn-s{ background:#17141f; }
+    }
+</style>
+</head>
+<body>
+<div class="app">
+
+    <div class="header">
+        <h1>🎙️ صوت إلى نص</h1>
+        <p>ارفع ملف صوت — واحصل على نصه مكتوبًا</p>
+        <div class="badges">
+            <span class="badge">🆓 مجاني بالكامل</span>
+            <span class="badge">🔒 يعمل على جهازك — ملفك لا يغادر جوالك</span>
+            <span class="badge">🌍 عربي + لغات كثيرة</span>
+        </div>
+    </div>
+
+    <!-- ١: رفع الملف -->
+    <div class="card">
+        <h2>١️⃣ ارفع ملف الصوت</h2>
+        <div class="drop" id="dropZone">
+            <div class="icon">🎵</div>
+            <strong>اضغط هنا لاختيار ملف صوت</strong>
+            <span>أو اسحب الملف وأفلته هنا — MP3, WAV, M4A, OGG, OPUS, FLAC, AAC</span>
+        </div>
+        <input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.opus,.flac,.webm,.aiff,.wma" hidden>
+        <div class="fileinfo" id="fileInfo"></div>
+        <div class="warn soft" id="warnSoft">⏳ هذا ملف طويل/كبير: سيُحوَّل على أجزاء جزءًا بعد جزء، وقد يأخذ وقتًا. اترك الشاشة مفتوحة ولا تُغلق الصفحة أثناء العمل.</div>
+        <div class="warn hard" id="warnHard">⚠️ هذا الملف ضخم جدًا على ذاكرة الجوال وقد يتوقف. إن فشل: جرّبه من كمبيوتر، أو قصّ الصوت إلى أجزاء أصغر وحوّل كل جزء وحده.</div>
+        <audio id="player" controls preload="metadata"></audio>
+    </div>
+
+    <!-- ٢: الإعدادات -->
+    <div class="card">
+        <h2>٢️⃣ الإعدادات</h2>
+        <label class="f" for="langSel">🌍 لغة الصوت</label>
+        <select id="langSel">
+            <option value="">🔍 كشف تلقائي عن اللغة</option>
+            <option value="arabic" selected>العربية</option>
+            <option value="english">English — الإنجليزية</option>
+            <option value="french">الفرنسية</option>
+            <option value="spanish">الإسبانية</option>
+            <option value="german">الألمانية</option>
+            <option value="turkish">التركية</option>
+            <option value="persian">الفارسية</option>
+            <option value="urdu">الأردية</option>
+            <option value="hindi">الهندية</option>
+            <option value="indonesian">الإندونيسية</option>
+            <option value="russian">الروسية</option>
+            <option value="ukrainian">الأوكرانية</option>
+            <option value="italian">الإيطالية</option>
+            <option value="portuguese">البرتغالية</option>
+            <option value="dutch">الهولندية</option>
+            <option value="chinese">الصينية</option>
+            <option value="japanese">اليابانية</option>
+            <option value="korean">الكورية</option>
+        </select>
+
+        <label class="f" for="modelSel">🧠 دقة التحويل (يُنزّل النموذج مرة واحدة فقط أول تشغيل)</label>
+        <select id="modelSel">
+            <option value="Xenova/whisper-tiny">⚡ سريع — تنزيل صغير، دقة أقل (للتجربة السريعة)</option>
+            <option value="Xenova/whisper-base" selected>⚖️ متوازن — سرعة ودقة جيدة (الموصى به للجوال)</option>
+            <option value="Xenova/whisper-small">🎯 دقيق — أفضل نتيجة للعربية، أبطأ وتنزيله أكبر (يُفضل كمبيوتر/واي فاي)</option>
+        </select>
+
+        <label class="chk">
+            <input type="checkbox" id="tsChk">
+            <span>⏱️ إظهار الوقت بجانب كل سطر + تمكين تنزيل الترجمة (SRT)</span>
+        </label>
+    </div>
+
+    <!-- ٣: التحويل -->
+    <div class="card">
+        <h2>٣️⃣ التحويل إلى نص</h2>
+        <button class="btn btn-main" id="startBtn" disabled>🚀 ابدأ تحويل الصوت إلى نص</button>
+        <button class="btn btn-stop" id="cancelBtn">⏹️ إيقاف التحويل</button>
+        <div class="progwrap" id="progWrap">
+            <div class="barbg"><div class="bar" id="progBar"></div></div>
+            <div class="progtext" id="progText">جاهز</div>
+        </div>
+        <ul class="log" id="logList"></ul>
+    </div>
+
+    <!-- النتيجة -->
+    <div class="card">
+        <h2>📝 النص الناتج</h2>
+        <textarea id="resultArea" placeholder="سيظهر النص هنا أثناء التحويل… يمكنك تعديله يدويًا بعد انتهائه."></textarea>
+        <div class="stats" id="statsText"></div>
+        <div class="row">
+            <button class="btn-s" id="copyBtn" disabled>📋 نسخ النص</button>
+            <button class="btn-s" id="txtBtn" disabled>⬇️ تنزيل TXT</button>
+            <button class="btn-s" id="srtBtn" disabled>⬇️ تنزيل SRT</button>
+        </div>
+    </div>
+
+    <!-- طريقة العمل -->
+    <div class="card">
+        <h2>❓ كيف يعمل؟</h2>
+        <ol class="howto">
+            <li>ارفع ملف الصوت، ثم اضغط زر بدء التحويل.</li>
+            <li>أول مرة فقط: يُنزّل «عقل» التحويل (نموذج Whisper) إلى جهازك — يحتاج إنترنت/واي فاي، وبعدها يعمل دون تنزيله مجددًا.</li>
+            <li>الصوت الطويل يُقسم تلقائيًا إلى أجزاء (٤ دقائق) وتظهر النتيجة جزءًا بعد جزء.</li>
+            <li>انسخ النص أو نزّله ملف TXT — أو SRT إن فعّلت خيار الوقت.</li>
+        </ol>
+        <p class="hint">🔒 الخصوصية: معالجة الصوت تتم 100% داخل متصفح جهازك — لا يُرفع ملفك إلى أي خادم.</p>
+    </div>
+
+    <div class="footer">
+        تطبيق «صوت إلى نص» — مستقل تمامًا عن تطبيق واتساب بلس<br>
+        يعمل بنموذج OpenAI Whisper داخل المتصفح (Transformers.js)
+    </div>
+</div>
+
+<!-- ===== عامل التحويل في الخلفية (Web Worker) ===== -->
+<script type="text/plain" id="workerCode">
+import { pipeline } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3/dist/transformers.min.js';
+
+let transcriber = null;
+let currentModel = null;
+const filesProgress = {};
+
+function reportProgress(x) {
+    if (x && x.file) {
+        if (x.status === 'progress' && x.total) {
+            filesProgress[x.file] = { loaded: x.loaded || 0, total: x.total };
+        } else if (x.status === 'done' && filesProgress[x.file]) {
+            filesProgress[x.file].loaded = filesProgress[x.file].total;
+        }
+    }
+    let loaded = 0, total = 0;
+    for (const f in filesProgress) { loaded += filesProgress[f].loaded || 0; total += filesProgress[f].total || 0; }
+    const percent = total > 0 ? Math.round((loaded / total) * 100) : null;
+    self.postMessage({ type: 'model-progress', percent: percent });
+}
+
+async function loadModel(model) {
+    if (transcriber && currentModel === model) return;
+    transcriber = null;
+    for (const k in filesProgress) delete filesProgress[k];
+    const makeOpts = function (device) {
+        return {
+            device: device,
+            dtype: device === 'webgpu'
+                ? { encoder_model: 'fp32', decoder_model_merged: 'q4' }
+                : 'q8',
+            progress_callback: reportProgress
+        };
+    };
+    try {
+        if (self.navigator && 'gpu' in self.navigator) {
+            transcriber = await pipeline('automatic-speech-recognition', model, makeOpts('webgpu'));
+        } else {
+            throw new Error('WebGPU غير متاح');
+        }
+    } catch (e) {
+        transcriber = await pipeline('automatic-speech-recognition', model, makeOpts('wasm'));
+    }
+    currentModel = model;
+}
+
+self.onmessage = async function (e) {
+    const d = e.data || {};
+    try {
+        if (d.type === 'load') {
+            await loadModel(d.model);
+            self.postMessage({ type: 'model-ready' });
+        } else if (d.type === 'segment') {
+            await loadModel(d.model);
+            const audio = new Float32Array(d.audio);
+            const options = {
+                task: 'transcribe',
+                chunk_length_s: 30,
+                stride_length_s: 5,
+                return_timestamps: !!d.timestamps
+            };
+            if (d.language) options.language = d.language;
+            const out = await transcriber(audio, options);
+            self.postMessage({
+                type: 'segment-done',
+                id: d.id,
+                text: (out && out.text) ? out.text : '',
+                chunks: (out && out.chunks) ? out.chunks : null
+            });
+        }
+    } catch (err) {
+        self.postMessage({
+            type: 'error',
+            id: (d && d.id) ? d.id : null,
+            message: (err && err.message) ? err.message : String(err)
+        });
+    }
+};
+</script>
+
+<script>
+(function () {
+    'use strict';
+    const $ = function (s) { return document.querySelector(s); };
+    const dropZone = $('#dropZone'), fileInput = $('#fileInput'), fileInfo = $('#fileInfo');
+    const warnSoft = $('#warnSoft'), warnHard = $('#warnHard'), player = $('#player');
+    const langSel = $('#langSel'), modelSel = $('#modelSel'), tsChk = $('#tsChk');
+    const startBtn = $('#startBtn'), cancelBtn = $('#cancelBtn');
+    const progWrap = $('#progWrap'), progBar = $('#progBar'), progText = $('#progText');
+    const logList = $('#logList'), resultArea = $('#resultArea'), statsText = $('#statsText');
+    const copyBtn = $('#copyBtn'), txtBtn = $('#txtBtn'), srtBtn = $('#srtBtn');
+
+    const SEG_SECONDS = 240; // كل جزء ٤ دقائق
+    const LS_KEY = 'a2t_v1_settings';
+
+    let currentFile = null;
+    let worker = null;
+    let busy = false;
+    let cancelled = false;
+    let segSeq = 0;
+    let pendingSegs = new Map();
+    let loadResolve = null, loadReject = null;
+    let srtEntries = [];
+    let audioDurationSec = 0;
+    let objectUrl = null;
+
+    /* ---------- أدوات ---------- */
+    function fmtBytes(b) {
+        if (!b && b !== 0) return '';
+        const u = ['بايت', 'KB', 'MB', 'GB']; let i = 0, n = b;
+        while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+        return n.toFixed(i ? 1 : 0) + ' ' + u[i];
+    }
+    function fmtClock(sec) {
+        sec = Math.max(0, Math.floor(sec || 0));
+        const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+        const p = function (x) { return String(x).padStart(2, '0'); };
+        return p(h) + ':' + p(m) + ':' + p(s);
+    }
+    function fmtSrtTime(sec) {
+        sec = Math.max(0, sec || 0);
+        const ms = Math.round((sec % 1) * 1000);
+        return fmtClock(sec) + ',' + String(ms).padStart(3, '0');
+    }
+    function nowTime() { return new Date().toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
+    function logMsg(msg, kind) {
+        const li = document.createElement('li');
+        if (kind) li.className = kind;
+        li.textContent = '[' + nowTime() + '] ' + msg;
+        logList.prepend(li);
+        while (logList.children.length > 40) logList.lastChild.remove();
+    }
+    function setProgress(percent, text, indet) {
+        progWrap.classList.add('show');
+        progBar.classList.toggle('indet', !!indet);
+        if (!indet && percent !== null && percent !== undefined) progBar.style.width = percent + '%';
+        if (text) progText.textContent = text;
+    }
+    function updateStats(extra) {
+        const words = resultArea.value.trim() ? resultArea.value.trim().split(/\s+/).length : 0;
+        statsText.textContent = (audioDurationSec ? '🎵 مدة الصوت: ' + fmtClock(audioDurationSec) + '  •  ' : '')
+            + '📝 الكلمات: ' + words + (extra ? '  •  ' + extra : '');
+        const hasText = !!resultArea.value.trim();
+        copyBtn.disabled = !hasText; txtBtn.disabled = !hasText;
+        srtBtn.disabled = !(hasText && srtEntries.length);
+    }
+    function saveSettings() {
+        try { localStorage.setItem(LS_KEY, JSON.stringify({ lang: langSel.value, model: modelSel.value, ts: tsChk.checked })); } catch (e) {}
+    }
+    function loadSettings() {
+        try {
+            const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+            if (s) {
+                if (s.lang !== undefined) langSel.value = s.lang;
+                if (s.model) modelSel.value = s.model;
+                tsChk.checked = !!s.ts;
+            }
+        } catch (e) {}
+    }
+
+    /* ---------- اختيار الملف ---------- */
+    function handleFile(file) {
+        if (!file) return;
+        if (file.type && file.type.indexOf('audio') !== 0 && !/\.(mp3|wav|m4a|aac|ogg|oga|opus|flac|webm|aiff|wma)$/i.test(file.name)) {
+            logMsg('⚠️ هذا ليس ملف صوت معروفًا — قد يفشل فكّه. الأفضل MP3 أو WAV أو M4A.', 'warn');
+        }
+        currentFile = file;
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        objectUrl = URL.createObjectURL(file);
+        player.src = objectUrl; player.classList.add('show');
+        fileInfo.classList.add('show');
+        fileInfo.innerHTML = '📄 <strong></strong><br>💾 الحجم: ' + fmtBytes(file.size) + ' &nbsp;•&nbsp; ⏱️ المدة: <span id="durSpan">…</span>';
+        fileInfo.querySelector('strong').textContent = file.name;
+        warnSoft.classList.toggle('show', file.size > 30 * 1024 * 1024);
+        warnHard.classList.toggle('show', file.size > 250 * 1024 * 1024);
+        player.onloadedmetadata = function () {
+            audioDurationSec = isFinite(player.duration) ? player.duration : 0;
+            const el = document.getElementById('durSpan');
+            if (el) el.textContent = audioDurationSec ? fmtClock(audioDurationSec) : 'غير معروفة';
+            if (audioDurationSec > 30 * 60) warnSoft.classList.add('show');
+            updateStats();
+        };
+        startBtn.disabled = busy;
+        logMsg('🎵 تم اختيار الملف: ' + file.name + ' (' + fmtBytes(file.size) + ')', 'ok');
+    }
+
+    dropZone.addEventListener('click', function () { fileInput.click(); });
+    fileInput.addEventListener('change', function () { handleFile(fileInput.files[0]); });
+    ['dragenter', 'dragover'].forEach(function (ev) {
+        dropZone.addEventListener(ev, function (e) { e.preventDefault(); dropZone.classList.add('over'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+        dropZone.addEventListener(ev, function (e) { e.preventDefault(); dropZone.classList.remove('over'); });
+    });
+    dropZone.addEventListener('drop', function (e) {
+        const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        handleFile(f);
+    });
+
+    /* ---------- فكّ الصوت إلى 16kHz ---------- */
+    async function decodeTo16k(blob) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) throw new Error('متصفحك لا يدعم معالجة الصوت (Web Audio)');
+        const buf = await blob.arrayBuffer();
+        const ctx = new AC();
+        let audioBuf;
+        try {
+            audioBuf = await ctx.decodeAudioData(buf);
+        } finally {
+            try { ctx.close(); } catch (e) {}
+        }
+        let buffer = audioBuf;
+        if (audioBuf.sampleRate !== 16000) {
+            const len = Math.max(1, Math.ceil(audioBuf.duration * 16000));
+            const off = new OfflineAudioContext(1, len, 16000);
+            const src = off.createBufferSource();
+            src.buffer = audioBuf;
+            src.connect(off.destination);
+            src.start();
+            buffer = await off.startRendering();
+        }
+        let data;
+        if (buffer.numberOfChannels === 1) {
+            data = new Float32Array(buffer.getChannelData(0));
+        } else {
+            const l = buffer.getChannelData(0), r = buffer.getChannelData(1);
+            data = new Float32Array(l.length);
+            for (let i = 0; i < l.length; i++) data[i] = (l[i] + r[i]) / 2;
+        }
+        return { data: data, duration: buffer.duration };
+    }
+
+    /* ---------- العامل الخلفي ---------- */
+    function ensureWorker() {
+        if (worker) return worker;
+        const code = document.getElementById('workerCode').textContent;
+        const blob = new Blob([code], { type: 'text/javascript' });
+        worker = new Worker(URL.createObjectURL(blob), { type: 'module' });
+        worker.onmessage = function (e) {
+            const d = e.data || {};
+            if (d.type === 'model-progress') {
+                if (d.percent !== null && d.percent !== undefined) {
+                    setProgress(d.percent, '⬇️ تنزيل نموذج التحويل… ' + d.percent + '% (مرة واحدة فقط)');
+                } else {
+                    setProgress(null, '⬇️ تنزيل/تجهيز نموذج التحويل…', true);
+                }
+            } else if (d.type === 'model-ready') {
+                if (loadResolve) { loadResolve(); loadResolve = null; loadReject = null; }
+            } else if (d.type === 'segment-done') {
+                const p = pendingSegs.get(d.id);
+                if (p) { pendingSegs.delete(d.id); p.resolve(d); }
+            } else if (d.type === 'error') {
+                if (d.id && pendingSegs.has(d.id)) {
+                    const p2 = pendingSegs.get(d.id); pendingSegs.delete(d.id); p2.reject(new Error(d.message));
+                } else if (loadReject) {
+                    loadReject(new Error(d.message)); loadResolve = null; loadReject = null;
+                } else {
+                    logMsg('❌ خطأ: ' + d.message, 'err');
+                }
+            }
+        };
+        worker.onerror = function (err) {
+            logMsg('❌ خطأ في محرك التحويل: ' + (err.message || 'غير معروف'), 'err');
+        };
+        return worker;
+    }
+    function loadModelAsync(model) {
+        ensureWorker();
+        return new Promise(function (resolve, reject) {
+            loadResolve = resolve; loadReject = reject;
+            worker.postMessage({ type: 'load', model: model });
+        });
+    }
+    function transcribeSegment(slice, opts) {
+        ensureWorker();
+        const id = ++segSeq;
+        return new Promise(function (resolve, reject) {
+            pendingSegs.set(id, { resolve: resolve, reject: reject });
+            worker.postMessage({
+                type: 'segment', id: id, model: opts.model,
+                language: opts.language, timestamps: opts.timestamps,
+                audio: slice.buffer
+            }, [slice.buffer]);
+        });
+    }
+
+    /* ---------- بدء التحويل ---------- */
+    async function startTranscribe() {
+        if (!currentFile || busy) return;
+        saveSettings();
+        busy = true; cancelled = false;
+        startBtn.disabled = true;
+        cancelBtn.classList.add('show');
+        resultArea.value = '';
+        srtEntries = [];
+        updateStats();
+        const startedAt = Date.now();
+        const model = modelSel.value;
+        const language = langSel.value || null;
+        const useTs = tsChk.checked;
+
+        try {
+            setProgress(null, '🎧 قراءة ملف الصوت وفكّه…', true);
+            logMsg('🎧 جارٍ فكّ ملف الصوت… (الملفات الكبيرة تأخذ وقتًا هنا)');
+            const decoded = await decodeTo16k(currentFile);
+            if (cancelled) throw new Error('cancelled');
+            audioDurationSec = decoded.duration;
+            const data = decoded.data;
+            logMsg('✅ جاهز الصوت: مدته ' + fmtClock(audioDurationSec), 'ok');
+
+            setProgress(null, '🧠 تجهيز نموذج التحويل…', true);
+            logMsg('🧠 تجهيز نموذج التحويل… (إن كانت أول مرة سيُنزّل الآن)');
+            await loadModelAsync(model);
+            if (cancelled) throw new Error('cancelled');
+            logMsg('✅ النموذج جاهز — بدء النسخ…', 'ok');
+
+            const segLen = SEG_SECONDS * 16000;
+            const totalSegs = Math.max(1, Math.ceil(data.length / segLen));
+            const collected = [];
+
+            for (let off = 0, idx = 0; off < data.length; off += segLen, idx++) {
+                if (cancelled) throw new Error('cancelled');
+                const offsetSec = off / 16000;
+                setProgress(Math.round((idx / totalSegs) * 100),
+                    '✍️ نسخ الجزء ' + (idx + 1) + ' من ' + totalSegs + ' (عند ' + fmtClock(offsetSec) + ')…');
+                const slice = data.slice(off, Math.min(off + segLen, data.length));
+                const res = await transcribeSegment(slice, { model: model, language: language, timestamps: useTs });
+
+                let partText = '';
+                if (useTs && res.chunks && res.chunks.length) {
+                    partText = res.chunks.map(function (c) {
+                        const st = offsetSec + ((c.timestamp && c.timestamp[0]) || 0);
+                        return '[' + fmtClock(st) + '] ' + (c.text || '').trim();
+                    }).join('\n');
+                    res.chunks.forEach(function (c) {
+                        const st = offsetSec + ((c.timestamp && c.timestamp[0]) || 0);
+                        let en = (c.timestamp && c.timestamp[1] != null) ? offsetSec + c.timestamp[1] : st + 2;
+                        if (en <= st) en = st + 1;
+                        if ((c.text || '').trim()) srtEntries.push({ start: st, end: en, text: c.text.trim() });
+                    });
+                } else {
+                    partText = (res.text || '').trim();
+                    if (partText && useTs) {
+                        srtEntries.push({ start: offsetSec, end: offsetSec + Math.min(SEG_SECONDS, decoded.duration - offsetSec), text: partText });
+                    }
+                }
+                if (partText) {
+                    collected.push(partText);
+                    resultArea.value = collected.join(useTs ? '\n' : '\n');
+                    resultArea.scrollTop = resultArea.scrollHeight;
+                }
+                setProgress(Math.round(((idx + 1) / totalSegs) * 100),
+                    '✍️ أُنتهي من الجزء ' + (idx + 1) + ' من ' + totalSegs);
+                updateStats('⏱️ مضى: ' + fmtClock((Date.now() - startedAt) / 1000));
+            }
+
+            setProgress(100, '✅ اكتمل التحويل في ' + fmtClock((Date.now() - startedAt) / 1000));
+            if (!resultArea.value.trim()) {
+                logMsg('⚠️ انتهى التحويل لكن لم يُسمَع كلام واضح — تأكد أن الملف فيه كلام وأن اللغة صحيحة، أو جرّب النموذج «الدقيق».', 'warn');
+            } else {
+                logMsg('🎉 اكتمل التحويل! يمكنك الآن نسخ النص أو تنزيله.', 'ok');
+            }
+        } catch (err) {
+            if (err && err.message === 'cancelled') {
+                setProgress(0, '⏹️ أوقفتَ التحويل — ما تم نسخه محفوظ في صندوق النص');
+                logMsg('⏹️ تم إيقاف التحويل بطلبك. النص الجزئي محفوظ.', 'warn');
+            } else {
+                setProgress(0, '❌ حدث خطأ — راجع السجل بالأسفل');
+                logMsg('❌ فشل التحويل: ' + (err && err.message ? err.message : err), 'err');
+                logMsg('💡 تلميحات: تأكد من الإنترنت لأول تنزيل للنموذج، جرّب نموذجًا أخف (سريع/متوازن) إن امتلأت ذاكرة الجهاز، وجرّب صيغة MP3/WAV إن فشل فكّ الملف.', 'warn');
+            }
+        } finally {
+            busy = false;
+            startBtn.disabled = !currentFile;
+            cancelBtn.classList.remove('show');
+            updateStats();
+        }
+    }
+
+    startBtn.addEventListener('click', startTranscribe);
+    cancelBtn.addEventListener('click', function () {
+        cancelled = true;
+        if (worker) { try { worker.terminate(); } catch (e) {} worker = null; }
+        pendingSegs.forEach(function (p) { p.reject(new Error('cancelled')); });
+        pendingSegs.clear();
+        if (loadReject) { loadReject(new Error('cancelled')); loadResolve = null; loadReject = null; }
+    });
+
+    /* ---------- نسخ وتنزيل ---------- */
+    copyBtn.addEventListener('click', async function () {
+        try {
+            await navigator.clipboard.writeText(resultArea.value);
+            logMsg('📋 نُسخ النص إلى الحافظة.', 'ok');
+        } catch (e) {
+            resultArea.select();
+            document.execCommand('copy');
+            logMsg('📋 نُسخ النص إلى الحافظة.', 'ok');
+        }
+    });
+    function downloadFile(filename, content, type) {
+        const b = new Blob([content], { type: type });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(b);
+        a.download = filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+    }
+    function baseName() {
+        return (currentFile ? currentFile.name.replace(/\.[^.]+$/, '') : 'audio') + '-نص';
+    }
+    txtBtn.addEventListener('click', function () { downloadFile(baseName() + '.txt', resultArea.value, 'text/plain;charset=utf-8'); });
+    srtBtn.addEventListener('click', function () {
+        const srt = srtEntries.map(function (e, i) {
+            return (i + 1) + '\n' + fmtSrtTime(e.start) + ' --> ' + fmtSrtTime(e.end) + '\n' + e.text + '\n';
+        }).join('\n');
+        downloadFile(baseName() + '.srt', srt, 'text/plain;charset=utf-8');
+    });
+    resultArea.addEventListener('input', function () { updateStats(); });
+    [langSel, modelSel, tsChk].forEach(function (el) { el.addEventListener('change', saveSettings); });
+
+    loadSettings();
+    logMsg('🎙️ جاهز — ارفع ملف صوت ثم اضغط زر التحويل.');
+})();
+</script>
+</body>
+</html>
